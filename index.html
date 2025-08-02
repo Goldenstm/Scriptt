@@ -4,1098 +4,1319 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Élevage des Prés Verts - Vente de Chevaux de Prestige</title>
+    <title>Football Stickers - Carte Interactive</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Montserrat:wght@200;300;400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
-        
+        :root {
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1b3a;
+            --bg-tertiary: #252650;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0c8;
+            --text-muted: #6b6b8c;
+            --border: #2d2e5c;
+            --border-light: #383866;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --accent: #667eea;
+            --radius: 16px;
+            --radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        :root {
-            --primary-gold: #D4AF37;
-            --light-gold: #F4E4A1;
-            --dark-gold: #B8860B;
-            --deep-black: #0A0A0A;
-            --charcoal: #1A1A1A;
-            --warm-black: #2C2C2C;
-            --platinum: #E5E4E2;
-            --pearl: #F8F6F0;
-            --cream: #FFFDD0;
-            --white: #FFFFFF;
-            --text-primary: #0A0A0A;
-            --text-secondary: #4A4A4A;
-            --text-light: #6B6B6B;
-            --shadow-gold: 0 8px 32px rgba(212, 175, 55, 0.3);
-            --shadow-dark: 0 20px 60px rgba(10, 10, 10, 0.4);
-            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.1);
-            --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #F4E4A1 50%, #B8860B 100%);
-            --gradient-dark: linear-gradient(135deg, #0A0A0A 0%, #2C2C2C 100%);
-            --gradient-premium: linear-gradient(135deg, #D4AF37 0%, #F4E4A1 25%, #FFFFFF 50%, #F4E4A1 75%, #D4AF37 100%);
-        }
-
         body {
-            font-family: 'Montserrat', sans-serif;
-            line-height: 1.6;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
             color: var(--text-primary);
-            background: var(--pearl);
-            overflow-x: hidden;
+            min-height: 100vh;
+            line-height: 1.6;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 24px;
         }
 
-        /* Header Premium */
-        header {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(30px);
-            border-bottom: 1px solid var(--primary-gold);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            transition: all 0.4s ease;
-            box-shadow: var(--shadow-subtle);
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 0;
-        }
-
-        .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--deep-black);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .logo:hover {
-            transform: scale(1.05);
-        }
-
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--gradient-gold);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-            font-size: 1.5rem;
-            box-shadow: var(--shadow-gold);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .logo-icon::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
-            animation: shine 3s infinite;
-        }
-
-        @keyframes shine {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 3rem;
-        }
-
-        .nav-links a {
-            font-family: 'Montserrat', sans-serif;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-            position: relative;
-            padding: 0.5rem 0;
-        }
-
-        .nav-links a::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: var(--gradient-gold);
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
-        }
-
-        .nav-links a:hover {
-            color: var(--primary-gold);
-            transform: translateY(-2px);
-        }
-
-        .nav-links a:hover::before {
-            width: 100%;
-        }
-
-        /* Hero Section Luxe */
-        .hero {
-            background: var(--gradient-dark);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .header {
             text-align: center;
-            color: var(--white);
-            position: relative;
-            overflow: hidden;
+            margin-bottom: 32px;
         }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('/api/placeholder/1400/900') center/cover;
-            opacity: 0.3;
-            z-index: 1;
-        }
-
-        .hero::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--gradient-premium);
-            opacity: 0.1;
-            z-index: 2;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 3;
-            max-width: 900px;
-            padding: 0 2rem;
-        }
-
-        .hero-content h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(3rem, 8vw, 5.5rem);
-            font-weight: 800;
-            margin-bottom: 1.5rem;
-            letter-spacing: -0.02em;
-            text-shadow: 2px 2px 20px rgba(0,0,0,0.5);
-            background: var(--gradient-gold);
+        .header h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            animation: glow 2s ease-in-out infinite alternate;
         }
 
-        @keyframes glow {
-            from { filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3)); }
-            to { filter: drop-shadow(0 0 40px rgba(212, 175, 55, 0.6)); }
-        }
-
-        .hero-content .subtitle {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.5rem;
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
             font-weight: 400;
-            margin-bottom: 1rem;
-            color: var(--light-gold);
-            font-style: italic;
         }
 
-        .hero-content p {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.25rem;
-            margin-bottom: 3rem;
-            opacity: 0.9;
-            font-weight: 300;
-            line-height: 1.8;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 1rem;
-            background: var(--gradient-gold);
-            color: var(--deep-black);
-            padding: 1.5rem 3rem;
-            text-decoration: none;
-            border-radius: 50px;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            font-size: 1.1rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            transition: all 0.4s ease;
-            box-shadow: var(--shadow-gold);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 15px 50px rgba(212, 175, 55, 0.5);
-        }
-
-        /* Sections Premium */
-        .section {
-            padding: 10rem 0;
-            position: relative;
-        }
-
-        .section-title {
-            font-family: 'Playfair Display', serif;
-            text-align: center;
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: var(--deep-black);
-            letter-spacing: -0.02em;
-            position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 3px;
-            background: var(--gradient-gold);
-        }
-
-        .section-subtitle {
-            font-family: 'Cormorant Garamond', serif;
-            text-align: center;
-            font-size: 1.5rem;
-            font-style: italic;
-            color: var(--text-secondary);
-            margin-bottom: 5rem;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* About Section */
-        .about {
-            background: var(--white);
-            position: relative;
-        }
-
-        .about::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: var(--gradient-gold);
-        }
-
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6rem;
-            align-items: center;
-        }
-
-        .about-text {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.2rem;
-            line-height: 2;
-            color: var(--text-secondary);
-        }
-
-        .about-text p {
-            margin-bottom: 2rem;
-        }
-
-        .about-text .highlight {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.4rem;
-            font-style: italic;
-            color: var(--primary-gold);
-            font-weight: 600;
-        }
-
-        .about-image {
-            border-radius: 30px;
-            overflow: hidden;
-            box-shadow: var(--shadow-dark);
-            position: relative;
-        }
-
-        .about-image::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--gradient-gold);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1;
-        }
-
-        .about-image:hover::before {
-            opacity: 0.1;
-        }
-
-        /* Cards Ultra Premium */
-        .horses-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 3rem;
-            margin-top: 4rem;
-        }
-
-        .horse-card {
-            background: var(--white);
-            border-radius: 30px;
-            overflow: hidden;
-            box-shadow: var(--shadow-dark);
-            transition: all 0.4s ease;
-            border: 2px solid transparent;
-            position: relative;
-        }
-
-        .horse-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--gradient-gold);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .horse-card:hover {
-            transform: translateY(-15px) scale(1.02);
-            box-shadow: var(--shadow-gold);
-            border-color: var(--primary-gold);
-        }
-
-        .horse-card:hover::before {
-            opacity: 0.05;
-        }
-
-        .horse-image {
-            width: 100%;
-            height: 320px;
-            object-fit: cover;
-            transition: transform 0.4s ease;
-        }
-
-        .horse-card:hover .horse-image {
-            transform: scale(1.1);
-        }
-
-        .horse-info {
-            padding: 3rem;
-            position: relative;
-            z-index: 2;
-        }
-
-        .horse-info h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--deep-black);
-        }
-
-        .horse-details {
+        .nav-tabs {
             display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: var(--bg-tertiary);
+            padding: 8px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
         }
 
-        .horse-detail {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            background: var(--pearl);
-            border-radius: 15px;
-            border-left: 4px solid var(--primary-gold);
-        }
-
-        .horse-detail .label {
-            font-family: 'Montserrat', sans-serif;
+        .nav-tab {
+            flex: 1;
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
             font-weight: 500;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 0.9rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
         }
 
-        .horse-detail .value {
-            font-family: 'Cormorant Garamond', serif;
-            font-weight: 600;
-            color: var(--deep-black);
-            font-size: 1.2rem;
+        .nav-tab.active {
+            background: var(--accent);
+            color: white;
         }
 
-        .price {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary-gold);
-            margin-bottom: 2rem;
-            text-align: center;
-            text-shadow: 2px 2px 10px rgba(212, 175, 55, 0.3);
+        .nav-tab:hover:not(.active) {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
         }
 
-        /* Services Section Premium */
-        .services {
-            background: var(--gradient-dark);
-            color: var(--white);
-            position: relative;
+        .tab-content {
+            display: none;
         }
 
-        .services::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('/api/placeholder/1400/800') center/cover;
-            opacity: 0.05;
-            z-index: 1;
+        .tab-content.active {
+            display: block;
         }
 
-        .services .container {
-            position: relative;
-            z-index: 2;
-        }
-
-        .services-grid {
+        .main-content {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 3rem;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+            margin-bottom: 24px;
         }
 
-        .service-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(212, 175, 55, 0.3);
-            border-radius: 25px;
-            padding: 3rem;
-            text-align: center;
-            transition: all 0.4s ease;
-            position: relative;
+        .map-container {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 25px -5px var(--shadow), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            position: relative;
+            transition: var(--transition);
         }
 
-        .service-card::before {
-            content: '';
+        .map-container:hover {
+            box-shadow: 0 25px 50px -12px var(--shadow);
+        }
+
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+
+        .controls {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--gradient-gold);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1;
-        }
-
-        .service-card:hover::before {
-            opacity: 0.1;
-        }
-
-        .service-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--primary-gold);
-            box-shadow: var(--shadow-gold);
-        }
-
-        .service-card > * {
-            position: relative;
-            z-index: 2;
-        }
-
-        .service-icon {
-            font-size: 4rem;
-            margin-bottom: 2rem;
-            background: var(--gradient-gold);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0 4px 8px rgba(212, 175, 55, 0.3));
-        }
-
-        .service-card h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--light-gold);
-        }
-
-        .service-card p {
-            font-family: 'Montserrat', sans-serif;
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.8;
-            font-size: 1.1rem;
-        }
-
-        /* Contact Section Premium */
-        .contact {
-            background: var(--white);
-            position: relative;
-        }
-
-        .contact-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6rem;
-        }
-
-        .contact-form {
-            background: var(--pearl);
-            padding: 4rem;
-            border-radius: 30px;
-            box-shadow: var(--shadow-dark);
-            border: 2px solid var(--primary-gold);
-        }
-
-        .contact-form h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            color: var(--deep-black);
-            text-align: center;
+            top: 16px;
+            left: 16px;
+            z-index: 1000;
+            background: rgba(26, 27, 58, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            box-shadow: 0 10px 15px -3px var(--shadow);
+            min-width: 280px;
         }
 
         .form-group {
-            margin-bottom: 2rem;
+            margin-bottom: 16px;
         }
 
-        .form-group label {
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
             display: block;
-            margin-bottom: 0.8rem;
-            font-family: 'Montserrat', sans-serif;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
             font-weight: 500;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 0.9rem;
+            margin-bottom: 6px;
         }
 
-        .form-group input,
-        .form-group textarea {
+        .form-input, .form-select {
             width: 100%;
-            padding: 1.5rem;
-            border: 2px solid var(--platinum);
-            border-radius: 15px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.1rem;
-            background: var(--white);
-            transition: all 0.3s ease;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 400;
+            transition: var(--transition);
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus {
+        .form-input:focus, .form-select:focus {
             outline: none;
-            border-color: var(--primary-gold);
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
-            transform: translateY(-2px);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .form-group textarea {
-            height: 150px;
-            resize: vertical;
+        .form-input::placeholder {
+            color: var(--text-muted);
         }
 
-        .contact-info {
-            padding: 2rem;
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .contact-info h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
+        .panel {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px var(--shadow);
+            transition: var(--transition);
+        }
+
+        .panel:hover {
+            border-color: var(--border-light);
+            box-shadow: 0 20px 25px -5px var(--shadow);
+        }
+
+        .panel h3 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 3rem;
-            color: var(--deep-black);
-        }
-
-        .contact-item {
             display: flex;
             align-items: center;
-            gap: 2rem;
-            margin-bottom: 2.5rem;
-            padding: 2rem;
-            background: var(--pearl);
-            border-radius: 20px;
-            transition: all 0.3s ease;
-            border-left: 5px solid var(--primary-gold);
+            gap: 8px;
         }
 
-        .contact-item:hover {
-            background: var(--cream);
-            transform: translateX(10px);
+        .instructions {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            margin-bottom: 20px;
         }
 
-        .contact-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-gold);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: var(--deep-black);
-            box-shadow: var(--shadow-gold);
-        }
-
-        .contact-text .title {
-            font-family: 'Playfair Display', serif;
+        .instructions h4 {
+            color: var(--accent);
+            margin-bottom: 12px;
             font-weight: 600;
-            color: var(--deep-black);
-            margin-bottom: 0.5rem;
-            font-size: 1.3rem;
         }
 
-        .contact-text .description {
-            font-family: 'Montserrat', sans-serif;
+        .instructions ul {
             color: var(--text-secondary);
-            font-size: 1rem;
-            line-height: 1.6;
+            padding-left: 20px;
         }
 
-        /* Footer Premium */
-        footer {
-            background: var(--gradient-dark);
-            color: var(--white);
-            padding: 4rem 0;
-            text-align: center;
+        .instructions li {
+            margin-bottom: 4px;
+        }
+
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
             position: relative;
+            overflow: hidden;
+            cursor: pointer;
         }
 
-        footer::before {
+        .ranking-item:hover {
+            border-color: var(--border-light);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px var(--shadow);
+        }
+
+        .ranking-item:first-child {
+            border-left: 3px solid #ffd700;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), var(--bg-secondary));
+        }
+
+        .ranking-item:nth-child(2) {
+            border-left: 3px solid #c0c0c0;
+        }
+
+        .ranking-item:nth-child(3) {
+            border-left: 3px solid #cd7f32;
+        }
+
+        .ranking-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ranking-position {
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 20px;
+        }
+
+        .club-badge {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .ranking-score {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .delete-button {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 12px;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .delete-button:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .popup-content {
+            min-width: 240px;
+            padding: 4px;
+        }
+
+        /* Profile Page Styles */
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 15px -3px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
-            background: var(--gradient-gold);
+            height: 4px;
+            background: linear-gradient(135deg, var(--accent), #764ba2);
         }
 
-        .footer-content {
+        .profile-info {
             display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 24px;
         }
 
-        .footer-content p {
-            font-family: 'Montserrat', sans-serif;
-            opacity: 0.8;
+        .avatar-container {
+            position: relative;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            font-weight: 700;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .avatar-upload {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: var(--accent);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .player-details h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .player-club {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .club-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .player-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .activity-timeline {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px var(--shadow);
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .timeline-content h4 {
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .timeline-content p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 4px;
+        }
+
+        .timeline-time {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .back-button {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .back-button:hover {
+            background: var(--bg-secondary);
+            border-color: var(--border-light);
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: var(--bg-tertiary) !important;
+            color: var(--text-primary) !important;
+            border-radius: var(--radius-sm) !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: 0 10px 15px -3px var(--shadow) !important;
+        }
+
+        .leaflet-popup-content {
+            margin: 16px !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        .leaflet-popup-tip {
+            background: var(--bg-tertiary) !important;
+            border: 1px solid var(--border) !important;
+        }
+
+        .popup-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
             font-size: 1.1rem;
         }
 
-        .footer-signature {
-            font-family: 'Cormorant Garamond', serif;
-            font-style: italic;
-            color: var(--light-gold);
-            font-size: 1.3rem;
-            margin-top: 1rem;
+        .popup-meta {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 4px;
         }
 
-        /* Responsive Premium */
+        .popup-time {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
         @media (max-width: 1024px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .hero-content h1 {
-                font-size: 3rem;
-            }
-            
-            .about-content,
-            .contact-content {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-            }
-            
-            .horses-grid {
+            .main-content {
                 grid-template-columns: 1fr;
             }
             
-            .section {
-                padding: 6rem 0;
+            #map {
+                height: 500px;
             }
             
+            .controls {
+                position: relative;
+                margin-bottom: 16px;
+                top: 0;
+                left: 0;
+            }
+
+            .profile-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 640px) {
             .container {
-                padding: 0 1rem;
+                padding: 16px;
+            }
+            
+            .panel {
+                padding: 20px;
+            }
+            
+            .controls {
+                min-width: auto;
+                padding: 16px;
+            }
+            
+            #map {
+                height: 400px;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
             }
         }
 
-        /* Animations Premium */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes slideInFromLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-100px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+        .panel, .map-container, .profile-header, .activity-timeline {
+            animation: fadeIn 0.6s ease-out;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+        ::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .animate-fade-in {
-            animation: fadeInUp 1s ease-out;
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
         }
 
-        .animate-slide-in {
-            animation: slideInFromLeft 1s ease-out;
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 4px;
         }
 
-        .animate-float {
-            animation: float 3s ease-in-out infinite;
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
         }
     </style>
 </head>
 <body>
-    <header>
-        <nav class="container">
-            <a href="#accueil" class="logo">
-                <div class="logo-icon">👑</div>
-                Élevage des Prés Verts
-            </a>
-            <ul class="nav-links">
-                <li><a href="#accueil">Accueil</a></li>
-                <li><a href="#apropos">Nos Origines</a></li>
-                <li><a href="#chevaux">Collection</a></li>
-                <li><a href="#services">Services</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <section id="accueil" class="hero">
-        <div class="hero-content">
-            <h1>Élevage des Prés Verts</h1>
-            <p class="subtitle">L'Excellence Équestre depuis 2003</p>
-            <p>Découvrez notre collection exclusive de chevaux d'exception, élevés avec passion et expertise dans un domaine d'exception de 150 hectares.</p>
-            <a href="#chevaux" class="btn">
-                Découvrir Notre Collection
-                <span>→</span>
-            </a>
+    <div class="container">
+        <div class="header">
+            <h1>⚽ Football Stickers</h1>
+            <p>Posez vos stickers sur la carte et dominez les zones !</p>
         </div>
-    </section>
 
-    <section id="apropos" class="section about">
-        <div class="container">
-            <h2 class="section-title">L'Art de l'Élevage</h2>
-            <p class="section-subtitle">Une tradition d'excellence transmise de génération en génération</p>
-            <div class="about-content">
-                <div class="about-text">
-                    <p class="highlight">"L'excellence n'est pas un accident, c'est le résultat d'un engagement sans compromis."</p>
-                    <p>Bienvenue dans l'univers prestigieux de l'Élevage des Prés Verts, où chaque cheval incarne la quintessence de la noblesse équestre. Depuis notre fondation en 2003, nous perpétuons une tradition d'excellence qui fait de nous l'une des références incontournables du monde équestre français.</p>
-                    <p>Notre domaine de 150 hectares, niché au cœur d'un écrin de verdure exceptionnel, offre à nos chevaux un cadre de vie digne des plus grands champions. Chaque équidé bénéficie d'un suivi personnalisé par nos experts, garantissant son épanouissement et sa préparation optimale.</p>
-                    <p>Nous sommes fiers de proposer une sélection rigoureuse de chevaux d'exception, adaptés aux cavaliers les plus exigeants, qu'ils soient débutants passionnés ou champions confirmés.</p>
-                </div>
-                <div class="about-image">
-                    <img src="/api/placeholder/700/600" alt="Notre domaine d'exception" style="width: 100%; height: auto;">
-                </div>
-            </div>
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('map')">🗺️ Carte</button>
+            <button class="nav-tab" onclick="switchTab('profile')">👤 Mon Profil</button>
         </div>
-    </section>
 
-    <section id="chevaux" class="section">
-        <div class="container">
-            <h2 class="section-title">Notre Collection Exclusive</h2>
-            <p class="section-subtitle">Des chevaux d'exception sélectionnés avec le plus grand soin</p>
-            <div class="horses-grid">
-                <div class="horse-card">
-                    <img src="/api/placeholder/450/320" alt="Étoile du Matin" class="horse-image">
-                    <div class="horse-info">
-                        <h3>Étoile du Matin</h3>
-                        <div class="horse-details">
-                            <div class="horse-detail">
-                                <span class="label">Lignée</span>
-                                <span class="value">Selle Français</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Âge</span>
-                                <span class="value">6 ans</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Genre</span>
-                                <span class="value">Jument</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Spécialité</span>
-                                <span class="value">Saut d'obstacles</span>
-                            </div>
+        <!-- Tab Carte -->
+        <div id="map-tab" class="tab-content active">
+            <div class="main-content">
+                <div class="map-container">
+                    <div class="controls">
+                        <div class="form-group">
+                            <label class="form-label" for="username">Nom du joueur</label>
+                            <input type="text" id="username" class="form-input" placeholder="Entrez votre nom" maxlength="20">
                         </div>
-                        <div class="price">15 000 €</div>
-                        <a href="#contact" class="btn">Réserver une Visite</a>
+                        <div class="form-group">
+                            <label class="form-label" for="clubSelect">Club favori</label>
+                            <select id="clubSelect" class="form-select">
+                                <option value="">Choisir un club</option>
+                                <option value="PSG">Paris Saint-Germain</option>
+                                <option value="Lyon">Olympique Lyonnais</option>
+                                <option value="OM">Olympique de Marseille</option>
+                                <option value="Monaco">AS Monaco</option>
+                                <option value="Lille">Lille OSC</option>
+                                <option value="Rennes">Stade Rennais</option>
+                                <option value="Nice">OGC Nice</option>
+                                <option value="Strasbourg">RC Strasbourg</option>
+                                <option value="Nantes">FC Nantes</option>
+                                <option value="Bordeaux">FC Girondins de Bordeaux</option>
+                                <option value="Lens">RC Lens</option>
+                                <option value="Saint-Etienne">AS Saint-Étienne</option>
+                            </select>
+                        </div>
                     </div>
+                    <div id="map"></div>
                 </div>
 
-                <div class="horse-card">
-                    <img src="/api/placeholder/450/320" alt="Thunder Royal" class="horse-image">
-                    <div class="horse-info">
-                        <h3>Thunder Royal</h3>
-                        <div class="horse-details">
-                            <div class="horse-detail">
-                                <span class="label">Lignée</span>
-                                <span class="value">Pur-sang Anglais</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Âge</span>
-                                <span class="value">8 ans</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Genre</span>
-                                <span class="value">Hongre</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Spécialité</span>
-                                <span class="value">Dressage</span>
-                            </div>
+                <div class="sidebar">
+                    <div class="panel">
+                        <div class="instructions">
+                            <h4>🎮 Comment jouer</h4>
+                            <ul>
+                                <li>Entrez votre nom de joueur</li>
+                                <li>Sélectionnez votre club favori</li>
+                                <li>Cliquez sur la carte pour poser un sticker</li>
+                                <li>Surcollez les stickers adverses pour les conquérir</li>
+                                <li>Cliquez sur vos stickers pour les supprimer</li>
+                            </ul>
                         </div>
-                        <div class="price">22 000 €</div>
-                        <a href="#contact" class="btn">Réserver une Visite</a>
                     </div>
-                </div>
 
-                <div class="horse-card">
-                    <img src="/api/placeholder/450/320" alt="Belle Aurore" class="horse-image">
-                    <div class="horse-info">
-                        <h3>Belle Aurore</h3>
-                        <div class="horse-details">
-                            <div class="horse-detail">
-                                <span class="label">Lignée</span>
-                                <span class="value">Quarter Horse</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Âge</span>
-                                <span class="value">4 ans</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Genre</span>
-                                <span class="value">Jument</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Spécialité</span>
-                                <span class="value">Équitation Western</span>
-                            </div>
-                        </div>
-                        <div class="price">12 000 €</div>
-                        <a href="#contact" class="btn">Réserver une Visite</a>
+                    <div class="panel">
+                        <h3>🏆 Classement des Clubs</h3>
+                        <div id="clubRanking"></div>
                     </div>
-                </div>
 
-                <div class="horse-card">
-                    <img src="/api/placeholder/450/320" alt="Roi des Prés" class="horse-image">
-                    <div class="horse-info">
-                        <h3>Roi des Prés</h3>
-                        <div class="horse-details">
-                            <div class="horse-detail">
-                                <span class="label">Lignée</span>
-                                <span class="value">Holsteiner</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Âge</span>
-                                <span class="value">7 ans</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Genre</span>
-                                <span class="value">Étalon</span>
-                            </div>
-                            <div class="horse-detail">
-                                <span class="label">Spécialité</span>
-                                <span class="value">Concours Complet</span>
-                            </div>
-                        </div>
-                        <div class="price">35 000 €</div>
-                        <a href="#contact" class="btn">Réserver une Visite</a>
+                    <div class="panel">
+                        <h3>👑 Classement des Joueurs</h3>
+                        <div id="playerRanking"></div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <section id="services" class="section services">
-        <div class="container">
-            <h2 class="section-title">Services d'Excellence</h2>
-            <p class="section-subtitle">Un accompagnement premium pour votre passion équestre</p>
-            <div class="services-grid">
-                <div class="service-card">
-                    <div class="service-icon">🏇</div>
-                    <h3>Débourrage Premium</h3>
-                    <p>Débourrage professionnel avec méthodes douces et respectueuses, encadré par nos maîtres écuyers certifiés</p>
+        <!-- Tab Profil -->
+        <div id="profile-tab" class="tab-content">
+            <div class="profile-container">
+                <div class="profile-header">
+                    <div class="profile-info">
+                        <div class="avatar-container">
+                            <div class="avatar" id="playerAvatar">👤</div>
+                            <button class="avatar-upload" onclick="changeAvatar()">📷</button>
+                        </div>
+                        <div class="player-details">
+                            <h2 id="playerName">Nom du Joueur</h2>
+                            <div class="player-club" id="playerClubInfo">
+                                <div class="club-logo" id="playerClubLogo"></div>
+                                <span id="playerClubName">Aucun club sélectionné</span>
+                            </div>
+                            <div class="player-stats">
+                                <div class="stat-card">
+                                    <div class="stat-value" id="totalStickers">0</div>
+                                    <div class="stat-label">Stickers posés</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value" id="playerRank">#-</div>
+                                    <div class="stat-label">Classement</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value" id="totalOverrides">0</div>
+                                    <div class="stat-label">Surstickers</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="service-card">
-                    <div class="service-icon">🎯</div>
-                    <h3>Dressage Classique</h3>
-                    <p>Formation et perfectionnement en dressage classique selon les traditions françaises les plus raffinées</p>
-                </div>
-                <div class="service-card">
-                    <div class="service-icon">🏥</div>
-                    <h3>Suivi Vétérinaire</h3>
-                    <p>Suivi vétérinaire d'exception avec nos partenaires spécialisés en médecine équine de pointe</p>
-                </div>
-                <div class="service-card">
-                    <div class="service-icon">🚁</div>
-                    <h3>Transport VIP</h3>
-                    <p>Service de transport premium et sécurisé partout en Europe avec accompagnement personnalisé</p>
+
+                <div class="activity-timeline">
+                    <h3 style="margin-bottom: 24px; color: var(--text-primary);">🕒 Historique d'activité</h3>
+                    <div id="activityTimeline">
+                        <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+                            Aucune activité enregistrée
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <section id="contact" class="section contact">
-        <div class="container">
-            <h2 class="section-title">Contactez-Nous</h2>
-            <p class="section-subtitle">Nous sommes à votre disposition pour concrétiser vos projets équestres</p>
-            <div class="contact-content">
-                <div class="contact-form">
-                    <h3>Demande d'Information</h3>
-                    <form>
-                        <div class="form-group">
-                            <label for="nom">Nom & Prénom</label>
-                            <input type="text" id="nom" name="nom" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Adresse Email</label>
-                            <input type="email" id="email" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="telephone">Téléphone</label>
-                            <input type="tel" id="telephone" name="telephone">
-                        </div>
-                        <div class="form-group">
-                            <label for="cheval">Cheval d'intérêt</label>
-                            <input type="text" id="cheval" name="cheval" placeholder="Nom du cheval">
-                        </div>
-                        <div class="form-group">
-                            <label for="message">Votre Message</label>
-                            <textarea id="message" name="message" placeholder="Décrivez votre projet équestre..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn">
-                            Envoyer la Demande
-                            <span>→</span>
-                        </button>
-                    </form>
-                </div>
-                <div class="contact-info">
-                    <h3>Informations</h3>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        class FootballStickersApp {
+            constructor() {
+                this.map = null;
+                this.stickers = JSON.parse(localStorage.getItem('footballStickers')) || [];
+                this.stickerMarkers = new Map();
+                this.userLocationMarker = null;
+                this.playerProfiles = JSON.parse(localStorage.getItem('playerProfiles')) || {};
+                this.playerActivities = JSON.parse(localStorage.getItem('playerActivities')) || {};
+                this.clubColors = {
+                    'PSG': '#003366',
+                    'Lyon': '#FF0000',
+                    'OM': '#00A1DE',
+                    'Monaco': '#E00000',
+                    'Lille': '#D6001C',
+                    'Rennes': '#E10600',
+                    'Nice': '#C8102E',
+                    'Strasbourg': '#0099E5',
+                    'Nantes': '#FDEE21',
+                    'Bordeaux': '#003366',
+                    'Lens': '#D20000',
+                    'Saint-Etienne': '#2E8B57'
+                };
+                this.clubNames = {
+                    'PSG': 'Paris SG',
+                    'Lyon': 'Olympique Lyonnais',
+                    'OM': 'Olympique de Marseille',
+                    'Monaco': 'AS Monaco',
+                    'Lille': 'Lille OSC',
+                    'Rennes': 'Stade Rennais',
+                    'Nice': 'OGC Nice',
+                    'Strasbourg': 'RC Strasbourg',
+                    'Nantes': 'FC Nantes',
+                    'Bordeaux': 'FC Girondins',
+                    'Lens': 'RC Lens',
+                    'Saint-Etienne': 'AS Saint-Étienne'
+                };
+                this.clubAcronyms = {
+                    'PSG': 'PSG',
+                    'Lyon': 'OL',
+                    'OM': 'OM',
+                    'Monaco': 'ASM',
+                    'Lille': 'LOSC',
+                    'Rennes': 'SRFC',
+                    'Nice': 'OGCN',
+                    'Strasbourg': 'RCSA',
+                    'Nantes': 'FCN',
+                    'Bordeaux': 'FCGB',
+                    'Lens': 'RCL',
+                    'Saint-Etienne': 'ASSE'
+                };
+                this.playerClubs = JSON.parse(localStorage.getItem('playerClubs')) || {};
+                this.currentTab = 'map';
+                this.init();
+            }
+
+            init() {
+                this.initMap();
+                this.loadStickers();
+                this.updateRankings();
+                this.setupEventListeners();
+                this.updateProfile();
+            }
+
+            initMap() {
+                this.map = L.map('map').setView([46.603354, 1.888334], 6);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(this.map);
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        this.map.setView([lat, lng], 12);
+                        
+                        const userIcon = L.divIcon({
+                            html: '📍',
+                            iconSize: [25, 25],
+                            className: 'user-location'
+                        });
+                        this.userLocationMarker = L.marker([lat, lng], {
+                            icon: userIcon,
+                            isUserLocation: true
+                        }).addTo(this.map).bindPopup('Votre position');
+                    });
+                }
+
+                this.map.on('click', (e) => this.onMapClick(e));
+            }
+
+            onMapClick(e) {
+                const username = document.getElementById('username').value.trim();
+                const club = document.getElementById('clubSelect').value;
+
+                if (!username) {
+                    this.showNotification('Veuillez entrer votre nom !', 'error');
+                    return;
+                }
+
+                if (!club) {
+                    this.showNotification('Veuillez choisir un club !', 'error');
+                    return;
+                }
+
+                this.playerClubs[username] = club;
+                this.savePlayerClubs();
+
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                const existingSticker = this.findNearbySticker(lat, lng, 0.001);
+                let isOverride = false;
+
+                if (existingSticker) {
+                    if (existingSticker.username !== username) {
+                        isOverride = true;
+                    }
+                    existingSticker.club = club;
+                    existingSticker.username = username;
+                    existingSticker.timestamp = Date.now();
+                    this.showNotification('Sticker surcolé !', 'success');
+                } else {
+                    const sticker = {
+                        id: Date.now() + Math.random(),
+                        lat: lat,
+                        lng: lng,
+                        club: club,
+                        username: username,
+                        timestamp: Date.now()
+                    };
+                    this.stickers.push(sticker);
+                    this.showNotification('Sticker posé !', 'success');
+                }
+
+                // Enregistrer l'activité
+                this.recordActivity(username, isOverride ? 'override' : 'place', { club, lat, lng });
+
+                this.saveStickers();
+                this.refreshMap();
+                this.updateProfile();
+            }
+
+            recordActivity(username, type, data) {
+                if (!this.playerActivities[username]) {
+                    this.playerActivities[username] = [];
+                }
+
+                const activity = {
+                    id: Date.now() + Math.random(),
+                    type: type,
+                    timestamp: Date.now(),
+                    data: data
+                };
+
+                this.playerActivities[username].unshift(activity);
+                
+                // Garder seulement les 50 dernières activités
+                if (this.playerActivities[username].length > 50) {
+                    this.playerActivities[username] = this.playerActivities[username].slice(0, 50);
+                }
+
+                this.savePlayerActivities();
+            }
+
+            findNearbySticker(lat, lng, radius) {
+                return this.stickers.find(sticker => {
+                    const distance = Math.sqrt(
+                        Math.pow(sticker.lat - lat, 2) + Math.pow(sticker.lng - lng, 2)
+                    );
+                    return distance <= radius;
+                });
+            }
+
+            deleteSticker(stickerId) {
+                const currentUsername = document.getElementById('username').value.trim();
+                const stickerIndex = this.stickers.findIndex(s => s.id == stickerId);
+                
+                if (stickerIndex === -1) {
+                    this.showNotification('Sticker introuvable !', 'error');
+                    return;
+                }
+
+                const sticker = this.stickers[stickerIndex];
+                
+                if (sticker.username !== currentUsername) {
+                    this.showNotification('Vous ne pouvez supprimer que vos propres stickers !', 'error');
+                    return;
+                }
+
+                if (confirm('Êtes-vous sûr de vouloir supprimer ce sticker ?')) {
+                    this.stickers.splice(stickerIndex, 1);
                     
-                    <div class="contact-item">
-                        <div class="contact-icon">🏰</div>
-                        <div class="contact-text">
-                            <div class="title">Domaine</div>
-                            <div class="description">123 Chemin des Prés Verts<br>12345 Ville-Équestre, France</div>
-                        </div>
-                    </div>
+                    // Enregistrer l'activité de suppression
+                    this.recordActivity(currentUsername, 'delete', { 
+                        club: sticker.club,
+                        lat: sticker.lat,
+                        lng: sticker.lng
+                    });
 
-                    <div class="contact-item">
-                        <div class="contact-icon">☎️</div>
-                        <div class="contact-text">
-                            <div class="title">Réservations</div>
-                            <div class="description">+33 1 23 45 67 89<br>Ligne directe</div>
-                        </div>
-                    </div>
+                    this.saveStickers();
+                    this.refreshMap();
+                    this.updateProfile();
+                    this.showNotification('Sticker supprimé !', 'success');
+                }
+            }
 
-                    <div class="contact-item">
-                        <div class="contact-icon">📧</div>
-                        <div class="contact-text">
-                            <div class="title">Email</div>
-                            <div class="description">contact@elevage-presverts.fr</div>
-                        </div>
-                    </div>
+            refreshMap() {
+                this.clearStickerMarkers();
+                this.loadStickers();
+                this.updateRankings();
+            }
 
-                    <div class="contact-item">
-                        <div class="contact-icon">⏰</div>
-                        <div class="contact-text">
-                            <div class="title">Horaires</div>
-                            <div class="description">Lun-Ven: 8h-19h | Sam: 9h-18h<br>Dim: Sur rendez-vous exclusivement</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+            clearStickerMarkers() {
+                this.stickerMarkers.forEach(marker => {
+                    this.map.removeLayer(marker);
+                });
+                this.stickerMarkers.clear();
+            }
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <p>&copy; 2024 Élevage des Prés Verts. Tous droits réservés.</p>
-                <p>SIRET: 123 456 789 00012 | Membre d'honneur FFE | Certification ISO 9001</p>
-                <p class="footer-signature">"L'excellence n'est pas une destination, c'est un voyage."</p>
-            </div>
-        </div>
-    </footer>
+            loadStickers() {
+                this.clearStickerMarkers();
+
+                this.stickers.forEach(sticker => {
+                    const color = this.clubColors[sticker.club] || '#667eea';
+                    const clubName = this.clubNames[sticker.club] || sticker.club;
+                    const clubAcronym = this.clubAcronyms[sticker.club] || sticker.club.substring(0, 3);
+                    const currentUsername = document.getElementById('username').value.trim();
+                    
+                    const fontSize = clubAcronym.length <= 3 ? '10px' : '8px';
+                    
+                    const stickerIcon = L.divIcon({
+                        html: `<div style="background: linear-gradient(135deg, ${color}, ${color}dd); width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: ${fontSize};">${clubAcronym}</div>`,
+                        iconSize: [32, 32],
+                        className: 'sticker-marker'
+                    });
+
+                    let popupContent = `
+                        <div class="popup-content">
+                            <div class="popup-title">${clubName}</div>
+                            <div class="popup-meta">Posé par: <span onclick="showPlayerProfile('${sticker.username}')" style="color: var(--accent); cursor: pointer; text-decoration: underline;">${sticker.username}</span></div>
+                            <div class="popup-time">${new Date(sticker.timestamp).toLocaleString('fr-FR')}</div>
+                    `;
+                    
+                    if (sticker.username === currentUsername && currentUsername) {
+                        popupContent += `<button class="delete-button" onclick="app.deleteSticker('${sticker.id}')">🗑️ Supprimer</button>`;
+                    }
+                    
+                    popupContent += '</div>';
+
+                    const marker = L.marker([sticker.lat, sticker.lng], {
+                        icon: stickerIcon,
+                        isUserLocation: false
+                    }).addTo(this.map).bindPopup(popupContent);
+                    
+                    this.stickerMarkers.set(sticker.id, marker);
+                });
+            }
+
+            updateRankings() {
+                this.updateClubRanking();
+                this.updatePlayerRanking();
+            }
+
+            updateClubRanking() {
+                const clubStats = {};
+                
+                this.stickers.forEach(sticker => {
+                    if (!clubStats[sticker.club]) {
+                        clubStats[sticker.club] = 0;
+                    }
+                    clubStats[sticker.club]++;
+                });
+
+                const sortedClubs = Object.entries(clubStats)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 10);
+
+                const clubRankingDiv = document.getElementById('clubRanking');
+                clubRankingDiv.innerHTML = '';
+
+                if (sortedClubs.length === 0) {
+                    clubRankingDiv.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Aucun sticker posé</p>';
+                    return;
+                }
+
+                sortedClubs.forEach(([club, count], index) => {
+                    const color = this.clubColors[club] || '#667eea';
+                    const clubName = this.clubNames[club] || club;
+                    
+                    const item = document.createElement('div');
+                    item.className = 'ranking-item';
+                    item.innerHTML = `
+                        <div class="ranking-content">
+                            <span class="ranking-position">${index + 1}.</span>
+                            <div class="club-badge" style="background: linear-gradient(135deg, ${color}, ${color}dd);"></div>
+                            <span>${clubName}</span>
+                        </div>
+                        <span class="ranking-score" style="color: ${color};">${count}</span>
+                    `;
+                    clubRankingDiv.appendChild(item);
+                });
+            }
+
+            updatePlayerRanking() {
+                const playerStats = {};
+                
+                this.stickers.forEach(sticker => {
+                    if (!playerStats[sticker.username]) {
+                        playerStats[sticker.username] = 0;
+                    }
+                    playerStats[sticker.username]++;
+                });
+
+                const sortedPlayers = Object.entries(playerStats)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 10);
+
+                const playerRankingDiv = document.getElementById('playerRanking');
+                playerRankingDiv.innerHTML = '';
+
+                if (sortedPlayers.length === 0) {
+                    playerRankingDiv.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Aucun joueur</p>';
+                    return;
+                }
+
+                sortedPlayers.forEach(([username, count], index) => {
+                    const playerClub = this.playerClubs[username];
+                    const playerColor = playerClub && this.clubColors[playerClub] ? this.clubColors[playerClub] : '#667eea';
+                    
+                    const item = document.createElement('div');
+                    item.className = 'ranking-item';
+                    item.innerHTML = `
+                        <div class="ranking-content">
+                            <span class="ranking-position">${index + 1}.</span>
+                            <span>👤 ${username}</span>
+                            ${playerClub ? `<div class="club-badge" style="background: linear-gradient(135deg, ${playerColor}, ${playerColor}dd); width: 16px; height: 16px;"></div>` : ''}
+                        </div>
+                        <span class="ranking-score" style="color: ${playerColor}; font-weight: 700;">${count}</span>
+                    `;
+                    
+                    item.addEventListener('click', () => this.showPlayerProfile(username));
+                    playerRankingDiv.appendChild(item);
+                });
+            }
+
+            updateProfile() {
+                const username = document.getElementById('username').value.trim();
+                if (!username) return;
+
+                // Mettre à jour le nom
+                document.getElementById('playerName').textContent = username;
+
+                // Mettre à jour l'avatar
+                const avatar = document.getElementById('playerAvatar');
+                const profile = this.playerProfiles[username];
+                if (profile && profile.avatar) {
+                    avatar.textContent = profile.avatar;
+                } else {
+                    avatar.textContent = username.charAt(0).toUpperCase();
+                }
+
+                // Mettre à jour le club
+                const playerClub = this.playerClubs[username];
+                const clubInfoDiv = document.getElementById('playerClubInfo');
+                const clubLogoDiv = document.getElementById('playerClubLogo');
+                const clubNameSpan = document.getElementById('playerClubName');
+
+                if (playerClub) {
+                    const clubColor = this.clubColors[playerClub];
+                    const clubName = this.clubNames[playerClub];
+                    const clubAcronym = this.clubAcronyms[playerClub];
+                    
+                    clubLogoDiv.style.background = `linear-gradient(135deg, ${clubColor}, ${clubColor}dd)`;
+                    clubLogoDiv.textContent = clubAcronym;
+                    clubNameSpan.textContent = clubName;
+                    clubInfoDiv.style.display = 'flex';
+                } else {
+                    clubInfoDiv.style.display = 'none';
+                }
+
+                // Calculer les statistiques
+                const playerStats = this.calculatePlayerStats(username);
+                document.getElementById('totalStickers').textContent = playerStats.totalStickers;
+                document.getElementById('playerRank').textContent = `#${playerStats.rank}`;
+                document.getElementById('totalOverrides').textContent = playerStats.overrides;
+
+                // Mettre à jour la timeline
+                this.updateActivityTimeline(username);
+            }
+
+            calculatePlayerStats(username) {
+                const totalStickers = this.stickers.filter(s => s.username === username).length;
+                
+                // Calculer le rang
+                const playerStats = {};
+                this.stickers.forEach(sticker => {
+                    if (!playerStats[sticker.username]) {
+                        playerStats[sticker.username] = 0;
+                    }
+                    playerStats[sticker.username]++;
+                });
+
+                const sortedPlayers = Object.entries(playerStats)
+                    .sort(([,a], [,b]) => b - a);
+                
+                const rank = sortedPlayers.findIndex(([name]) => name === username) + 1;
+
+                // Calculer les surstickers
+                const activities = this.playerActivities[username] || [];
+                const overrides = activities.filter(a => a.type === 'override').length;
+
+                return {
+                    totalStickers,
+                    rank: rank || '-',
+                    overrides
+                };
+            }
+
+            updateActivityTimeline(username) {
+                const activities = this.playerActivities[username] || [];
+                const timelineDiv = document.getElementById('activityTimeline');
+
+                if (activities.length === 0) {
+                    timelineDiv.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px;">Aucune activité enregistrée</div>';
+                    return;
+                }
+
+                const timelineHTML = activities.slice(0, 10).map(activity => {
+                    const icon = activity.type === 'place' ? '📌' : 
+                                 activity.type === 'override' ? '⚡' : '🗑️';
+                    const title = activity.type === 'place' ? 'Sticker posé' :
+                                  activity.type === 'override' ? 'Zone conquise' : 'Sticker supprimé';
+                    const clubName = this.clubNames[activity.data.club] || activity.data.club;
+                    const timeAgo = this.timeAgo(activity.timestamp);
+
+                    return `
+                        <div class="timeline-item">
+                            <div class="timeline-icon">${icon}</div>
+                            <div class="timeline-content">
+                                <h4>${title}</h4>
+                                <p>${clubName}</p>
+                                <div class="timeline-time">${timeAgo}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                timelineDiv.innerHTML = timelineHTML;
+            }
+
+            timeAgo(timestamp) {
+                const now = Date.now();
+                const diff = now - timestamp;
+                const minutes = Math.floor(diff / 60000);
+                const hours = Math.floor(diff / 3600000);
+                const days = Math.floor(diff / 86400000);
+
+                if (days > 0) return `Il y a ${days} jour${days > 1 ? 's' : ''}`;
+                if (hours > 0) return `Il y a ${hours} heure${hours > 1 ? 's' : ''}`;
+                if (minutes > 0) return `Il y a ${minutes} minute${minutes > 1 ? 's' : ''}`;
+                return 'À l\'instant';
+            }
+
+            showPlayerProfile(username) {
+                // Simuler l'affichage du profil d'un autre joueur
+                alert(`Profil de ${username}\n\nFonctionnalité à venir : page profil détaillée pour chaque joueur !`);
+            }
+
+            setupEventListeners() {
+                document.getElementById('username').addEventListener('input', (e) => {
+                    localStorage.setItem('footballStickersUsername', e.target.value);
+                    this.loadStickers();
+                    this.updateProfile();
+                });
+
+                document.getElementById('clubSelect').addEventListener('change', (e) => {
+                    const username = document.getElementById('username').value.trim();
+                    if (username && e.target.value) {
+                        this.playerClubs[username] = e.target.value;
+                        this.savePlayerClubs();
+                        this.updatePlayerRanking();
+                        this.updateProfile();
+                    }
+                    this.updateAccentColor(e.target.value);
+                });
+
+                const savedUsername = localStorage.getItem('footballStickersUsername');
+                if (savedUsername) {
+                    document.getElementById('username').value = savedUsername;
+                    if (this.playerClubs[savedUsername]) {
+                        document.getElementById('clubSelect').value = this.playerClubs[savedUsername];
+                        this.updateAccentColor(this.playerClubs[savedUsername]);
+                    }
+                }
+            }
+
+            updateAccentColor(club) {
+                if (club && this.clubColors[club]) {
+                    document.documentElement.style.setProperty('--accent', this.clubColors[club]);
+                } else {
+                    document.documentElement.style.setProperty('--accent', '#667eea');
+                }
+            }
+
+            showNotification(message, type) {
+                console.log(`${type.toUpperCase()}: ${message}`);
+            }
+
+            saveStickers() {
+                localStorage.setItem('footballStickers', JSON.stringify(this.stickers));
+            }
+
+            savePlayerClubs() {
+                localStorage.setItem('playerClubs', JSON.stringify(this.playerClubs));
+            }
+
+            savePlayerProfiles() {
+                localStorage.setItem('playerProfiles', JSON.stringify(this.playerProfiles));
+            }
+
+            savePlayerActivities() {
+                localStorage.setItem('playerActivities', JSON.stringify(this.playerActivities));
+            }
+        }
+
+        let app;
+
+        function switchTab(tabName) {
+            // Mettre à jour les onglets
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+
+            // Mettre à jour le contenu
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Rafraîchir la carte si nécessaire
+            if (tabName === 'map' && app.map) {
+                setTimeout(() => app.map.invalidateSize(), 100);
+            }
+
+            // Mettre à jour le profil si nécessaire
+            if (tabName === 'profile') {
+                app.updateProfile();
+            }
+        }
+
+        function changeAvatar() {
+            const avatars = ['👤', '😎', '🤓', '😃', '⚽', '🏆', '🔥', '⭐', '🚀', '🎯'];
+            const currentAvatar = document.getElementById('playerAvatar').textContent;
+            const currentIndex = avatars.indexOf(currentAvatar);
+            const nextIndex = (currentIndex + 1) % avatars.length;
+            const newAvatar = avatars[nextIndex];
+            
+            document.getElementById('playerAvatar').textContent = newAvatar;
+            
+            const username = document.getElementById('username').value.trim();
+            if (username) {
+                if (!app.playerProfiles[username]) {
+                    app.playerProfiles[username] = {};
+                }
+                app.playerProfiles[username].avatar = newAvatar;
+                app.savePlayerProfiles();
+            }
+        }
+
+        function showPlayerProfile(username) {
+            app.showPlayerProfile(username);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new FootballStickersApp();
+        });
+    </script>
 </body>
 </html>
