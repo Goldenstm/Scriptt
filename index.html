@@ -224,6 +224,7 @@
     </script>
 </body>
 </html>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -246,6 +247,9 @@
             --border-light: #383866;
             --shadow: rgba(0, 0, 0, 0.4);
             --accent: #667eea;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
             --radius: 16px;
             --radius-sm: 8px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -356,6 +360,9 @@
         #map {
             height: 600px;
             width: 100%;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
         }
 
         .controls {
@@ -549,6 +556,409 @@
             padding: 4px;
         }
 
+        /* Styles pour les tooltips */
+        .tooltip {
+            position: absolute;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            font-size: 0.875rem;
+            font-weight: 500;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(8px);
+            transition: var(--transition);
+            pointer-events: none;
+            min-width: 200px;
+            backdrop-filter: blur(12px);
+        }
+
+        .tooltip.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-bottom: none;
+            border-right: none;
+            transform: translateX(-50%) rotate(45deg);
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tooltip-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+
+        .tooltip-stat:last-child {
+            margin-bottom: 0;
+        }
+
+        .tooltip-value {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        /* Styles pour la page sticker */
+        .sticker-page {
+            display: none;
+        }
+
+        .sticker-page.active {
+            display: block;
+        }
+
+        .back-button {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .back-button:hover {
+            background: var(--bg-secondary);
+            border-color: var(--border-light);
+        }
+
+        .sticker-layout {
+            display: grid;
+            grid-template-columns: 35% 65%;
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+
+        .sticker-image-section {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 600px;
+            box-shadow: 0 10px 15px -3px var(--shadow);
+        }
+
+        .sticker-image {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-placeholder {
+            width: 200px;
+            height: 300px;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 3rem;
+            border: 2px dashed var(--border);
+        }
+
+        .sticker-info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .player-info {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px var(--shadow);
+        }
+
+        .player-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 16px;
+        }
+
+        .player-name:hover {
+            color: var(--text-primary);
+            text-decoration: underline;
+        }
+
+        .sticker-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .meta-item:last-child {
+            border-bottom: none;
+        }
+
+        .meta-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .meta-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .type-badge {
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .type-badge.stick {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .type-badge.surstick {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .mini-map-container {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px var(--shadow);
+        }
+
+        .mini-map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .mini-map-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .open-map-button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .open-map-button:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
+        #miniMap {
+            height: 300px;
+            width: 100%;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .history-section {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px var(--shadow);
+        }
+
+        .history-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            border-color: var(--border-light);
+            background: var(--bg-primary);
+        }
+
+        .history-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .history-content {
+            flex: 1;
+        }
+
+        .history-action {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .history-actor {
+            color: var(--accent);
+            font-size: 0.875rem;
+            margin-bottom: 4px;
+        }
+
+        .history-notes {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 4px;
+        }
+
+        .history-time {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            gap: 16px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: var(--error);
+        }
+
+        .error-title {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .error-message {
+            color: var(--text-secondary);
+            max-width: 400px;
+        }
+
+        .retry-button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .retry-button:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
         /* Profile Page Styles */
         .profile-container {
             max-width: 800px;
@@ -720,26 +1130,6 @@
             font-size: 0.75rem;
         }
 
-        .back-button {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 12px 24px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-weight: 500;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 24px;
-        }
-
-        .back-button:hover {
-            background: var(--bg-secondary);
-            border-color: var(--border-light);
-        }
-
         .leaflet-popup-content-wrapper {
             background: var(--bg-tertiary) !important;
             color: var(--text-primary) !important;
@@ -796,6 +1186,15 @@
                 flex-direction: column;
                 text-align: center;
             }
+
+            .sticker-layout {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .sticker-image-section {
+                min-height: 400px;
+            }
         }
 
         @media (max-width: 640px) {
@@ -819,6 +1218,14 @@
             .nav-tabs {
                 flex-direction: column;
             }
+
+            .sticker-image-section {
+                min-height: 300px;
+            }
+
+            .player-name {
+                font-size: 1.5rem;
+            }
         }
 
         @keyframes fadeIn {
@@ -826,7 +1233,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .panel, .map-container, .profile-header, .activity-timeline {
+        .panel, .map-container, .profile-header, .activity-timeline, .sticker-layout {
             animation: fadeIn 0.6s ease-out;
         }
 
@@ -899,8 +1306,8 @@
                                 <li>Entrez votre nom de joueur</li>
                                 <li>Sélectionnez votre club favori</li>
                                 <li>Cliquez sur la carte pour poser un sticker</li>
+                                <li>Cliquez sur un sticker pour voir ses détails</li>
                                 <li>Surcollez les stickers adverses pour les conquérir</li>
-                                <li>Cliquez sur vos stickers pour les supprimer</li>
                             </ul>
                         </div>
                     </div>
@@ -961,6 +1368,32 @@
                 </div>
             </div>
         </div>
+
+        <!-- Page Sticker -->
+        <div id="sticker-tab" class="tab-content sticker-page">
+            <button class="back-button" onclick="backToMap()">
+                ← Retour à la carte
+            </button>
+
+            <div id="stickerContent">
+                <!-- Le contenu sera chargé dynamiquement -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip dynamique -->
+    <div id="tooltip" class="tooltip">
+        <div class="tooltip-title">
+            <span class="tooltip-club-name"></span>
+        </div>
+        <div class="tooltip-stat">
+            <span>👥 Joueurs supporters:</span>
+            <span class="tooltip-value" id="tooltip-players">0</span>
+        </div>
+        <div class="tooltip-stat">
+            <span>📌 Stickers posés:</span>
+            <span class="tooltip-value" id="tooltip-stickers">0</span>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -968,6 +1401,7 @@
         class FootballStickersApp {
             constructor() {
                 this.map = null;
+                this.miniMap = null;
                 this.stickers = JSON.parse(localStorage.getItem('footballStickers')) || [];
                 this.stickerMarkers = new Map();
                 this.userLocationMarker = null;
@@ -1017,6 +1451,9 @@
                 };
                 this.playerClubs = JSON.parse(localStorage.getItem('playerClubs')) || {};
                 this.currentTab = 'map';
+                this.tooltip = document.getElementById('tooltip');
+                this.currentHoveredClub = null;
+                this.currentStickerId = null;
                 this.init();
             }
 
@@ -1026,6 +1463,17 @@
                 this.updateRankings();
                 this.setupEventListeners();
                 this.updateProfile();
+                this.initTooltips();
+                this.handleURLRouting();
+            }
+
+            handleURLRouting() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const stickerId = urlParams.get('stickerId');
+                
+                if (stickerId) {
+                    this.showStickerPage(stickerId);
+                }
             }
 
             initMap() {
@@ -1054,6 +1502,133 @@
                 }
 
                 this.map.on('click', (e) => this.onMapClick(e));
+            }
+
+            initMiniMap(lat, lng) {
+                if (this.miniMap) {
+                    this.miniMap.remove();
+                }
+
+                this.miniMap = L.map('miniMap').setView([lat, lng], 16);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(this.miniMap);
+
+                // Ajouter le marqueur du sticker
+                const pulseIcon = L.divIcon({
+                    html: '<div style="background: var(--accent); width: 20px; height: 20px; border-radius: 50%; animation: pulse 2s infinite;"></div>',
+                    iconSize: [20, 20],
+                    className: 'pulse-marker'
+                });
+
+                L.marker([lat, lng], { icon: pulseIcon }).addTo(this.miniMap);
+
+                // Ajouter l'animation CSS si elle n'existe pas
+                if (!document.querySelector('#pulseAnimation')) {
+                    const style = document.createElement('style');
+                    style.id = 'pulseAnimation';
+                    style.textContent = `
+                        @keyframes pulse {
+                            0% { transform: scale(1); opacity: 1; }
+                            50% { transform: scale(1.5); opacity: 0.7; }
+                            100% { transform: scale(1); opacity: 1; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+
+            initTooltips() {
+                document.addEventListener('mouseover', (e) => {
+                    const clubItem = e.target.closest('.club-ranking-item');
+                    if (clubItem) {
+                        const clubName = clubItem.dataset.club;
+                        if (clubName) {
+                            this.currentHoveredClub = clubName;
+                            this.showClubTooltip(e, clubName);
+                        }
+                    }
+                });
+
+                document.addEventListener('mouseout', (e) => {
+                    if (e.target.closest('.club-ranking-item')) {
+                        this.currentHoveredClub = null;
+                        this.hideTooltip();
+                    }
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (e.target.closest('.club-ranking-item') && this.currentHoveredClub) {
+                        this.updateTooltipPosition(e);
+                    }
+                });
+            }
+
+            showClubTooltip(event, clubName) {
+                const clubStats = this.getClubDetailedStats(clubName);
+                
+                this.tooltip.querySelector('.tooltip-club-name').textContent = this.clubNames[clubName] || clubName;
+                this.tooltip.querySelector('#tooltip-players').textContent = clubStats.playersCount;
+                this.tooltip.querySelector('#tooltip-stickers').textContent = clubStats.stickersCount;
+                
+                this.updateTooltipPosition(event);
+                this.tooltip.classList.add('show');
+            }
+
+            hideTooltip() {
+                this.tooltip.classList.remove('show');
+            }
+
+            updateTooltipPosition(event) {
+                const rect = this.tooltip.getBoundingClientRect();
+                const tooltipWidth = rect.width || 200;
+                const tooltipHeight = rect.height || 80;
+                
+                let left = event.pageX - tooltipWidth / 2;
+                let top = event.pageY - tooltipHeight - 10;
+                
+                if (left < 10) left = 10;
+                if (left + tooltipWidth > window.innerWidth - 10) {
+                    left = window.innerWidth - tooltipWidth - 10;
+                }
+                if (top < 10) {
+                    top = event.pageY + 10;
+                }
+                
+                this.tooltip.style.left = left + 'px';
+                this.tooltip.style.top = top + 'px';
+            }
+
+            getClubDetailedStats(clubName) {
+                const playersSet = new Set();
+                let stickersCount = 0;
+                
+                this.stickers.forEach(sticker => {
+                    if (sticker.club === clubName) {
+                        playersSet.add(sticker.username);
+                        stickersCount++;
+                    }
+                });
+
+                Object.entries(this.playerClubs).forEach(([username, club]) => {
+                    if (club === clubName) {
+                        playersSet.add(username);
+                    }
+                });
+
+                return {
+                    playersCount: playersSet.size,
+                    stickersCount: stickersCount
+                };
+            }
+
+            refreshTooltipIfNeeded() {
+                if (this.currentHoveredClub) {
+                    const clubStats = this.getClubDetailedStats(this.currentHoveredClub);
+                    this.tooltip.querySelector('#tooltip-players').textContent = clubStats.playersCount;
+                    this.tooltip.querySelector('#tooltip-stickers').textContent = clubStats.stickersCount;
+                }
             }
 
             onMapClick(e) {
@@ -1099,12 +1674,228 @@
                     this.showNotification('Sticker posé !', 'success');
                 }
 
-                // Enregistrer l'activité
                 this.recordActivity(username, isOverride ? 'override' : 'place', { club, lat, lng });
 
                 this.saveStickers();
                 this.refreshMap();
                 this.updateProfile();
+                this.refreshTooltipIfNeeded();
+            }
+
+            showStickerPage(stickerId) {
+                this.currentStickerId = stickerId;
+                this.hideTooltip();
+                
+                // Mettre à jour l'URL
+                const url = new URL(window.location);
+                url.searchParams.set('stickerId', stickerId);
+                window.history.pushState({ stickerId }, '', url);
+
+                // Changer vers l'onglet sticker
+                this.switchToTab('sticker');
+                
+                // Afficher l'état de chargement
+                this.showStickerLoading();
+                
+                // Simuler un appel API avec délai
+                setTimeout(() => {
+                    this.loadStickerData(stickerId);
+                }, 500);
+            }
+
+            switchToTab(tabName) {
+                // Masquer tous les onglets de navigation
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+
+                // Masquer tous les contenus
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // Afficher le contenu approprié
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+
+                this.currentTab = tabName;
+            }
+
+            showStickerLoading() {
+                const stickerContent = document.getElementById('stickerContent');
+                stickerContent.innerHTML = `
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <div style="color: var(--text-primary); font-weight: 500;">Chargement du sticker...</div>
+                    </div>
+                `;
+            }
+
+            loadStickerData(stickerId) {
+                const sticker = this.stickers.find(s => s.id == stickerId);
+                
+                if (!sticker) {
+                    this.showStickerError('Sticker introuvable', 'Ce sticker n\'existe plus ou a été supprimé.');
+                    return;
+                }
+
+                this.renderStickerPage(sticker);
+            }
+
+            renderStickerPage(sticker) {
+                const clubName = this.clubNames[sticker.club] || sticker.club;
+                const clubColor = this.clubColors[sticker.club] || '#667eea';
+                const timeAgo = this.timeAgo(sticker.timestamp);
+                
+                // Déterminer le type (simulé car pas dans les données actuelles)
+                const type = Math.random() > 0.5 ? 'stick' : 'surstick';
+                
+                // Générer l'historique simulé
+                const history = this.generateStickerHistory(sticker);
+
+                const stickerContent = document.getElementById('stickerContent');
+                stickerContent.innerHTML = `
+                    <div class="sticker-layout">
+                        <div class="sticker-image-section">
+                            <div class="image-placeholder">
+                                📷
+                            </div>
+                        </div>
+                        
+                        <div class="sticker-info-section">
+                            <div class="player-info">
+                                <div class="player-name" onclick="app.showPlayerProfile('${sticker.username}')" 
+                                     aria-label="Ouvrir profil de ${sticker.username}">
+                                    👤 ${sticker.username}
+                                </div>
+                                
+                                <div class="sticker-meta">
+                                    <div class="meta-item">
+                                        <span class="meta-label">Posé il y a</span>
+                                        <span class="meta-value">${timeAgo}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="meta-label">Type</span>
+                                        <span class="type-badge ${type}">${type}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="meta-label">Club</span>
+                                        <span class="meta-value" style="color: ${clubColor};">${clubName}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="meta-label">Position</span>
+                                        <span class="meta-value">${sticker.lat.toFixed(6)}°N, ${sticker.lng.toFixed(6)}°E</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mini-map-container">
+                                <div class="mini-map-header">
+                                    <div class="mini-map-title">📍 Localisation</div>
+                                    <button class="open-map-button" onclick="app.openMainMapAtSticker(${sticker.lat}, ${sticker.lng})">
+                                        Ouvrir sur la carte
+                                    </button>
+                                </div>
+                                <div id="miniMap"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="history-section">
+                        <div class="history-title">
+                            🕒 Historique
+                        </div>
+                        <div class="history-list">
+                            ${history.map(event => `
+                                <div class="history-item" onclick="app.showEventDetails('${event.id}')">
+                                    <div class="history-icon">${event.icon}</div>
+                                    <div class="history-content">
+                                        <div class="history-action">${event.action}</div>
+                                        <div class="history-actor">par ${event.actor}</div>
+                                        ${event.notes ? `<div class="history-notes">${event.notes}</div>` : ''}
+                                        <div class="history-time">${this.formatDate(event.when)}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+                // Initialiser la mini-carte après le rendu
+                setTimeout(() => {
+                    this.initMiniMap(sticker.lat, sticker.lng);
+                }, 100);
+            }
+
+            generateStickerHistory(sticker) {
+                const events = [];
+                const actors = ['admin', 'controlleur1', 'moderateur', sticker.username];
+                const actions = [
+                    { action: 'Sticker posé', icon: '📌', notes: null },
+                    { action: 'Contrôle effectué', icon: '✅', notes: 'Sticker conforme' },
+                    { action: 'Signalement', icon: '⚠️', notes: 'Image floue' },
+                    { action: 'Validation', icon: '✅', notes: 'Sticker approuvé' }
+                ];
+
+                // Événement de création
+                events.push({
+                    id: `event_${events.length}`,
+                    when: sticker.timestamp,
+                    actor: sticker.username,
+                    action: 'Sticker posé',
+                    icon: '📌',
+                    notes: `${this.clubNames[sticker.club]} sélectionné`
+                });
+
+                // Ajouter quelques événements aléatoires
+                for (let i = 0; i < Math.floor(Math.random() * 3) + 1; i++) {
+                    const randomAction = actions[Math.floor(Math.random() * actions.length)];
+                    const randomActor = actors[Math.floor(Math.random() * actors.length)];
+                    const eventTime = sticker.timestamp + (i + 1) * 3600000; // +1h à chaque fois
+                    
+                    events.push({
+                        id: `event_${events.length}`,
+                        when: eventTime,
+                        actor: randomActor,
+                        ...randomAction
+                    });
+                }
+
+                return events.sort((a, b) => b.when - a.when); // Trier par date décroissante
+            }
+
+            showStickerError(title, message) {
+                const stickerContent = document.getElementById('stickerContent');
+                stickerContent.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">😕</div>
+                        <div class="error-title">${title}</div>
+                        <div class="error-message">${message}</div>
+                        <button class="retry-button" onclick="app.loadStickerData('${this.currentStickerId}')">
+                            Réessayer
+                        </button>
+                    </div>
+                `;
+            }
+
+            openMainMapAtSticker(lat, lng) {
+                this.backToMap();
+                setTimeout(() => {
+                    this.map.setView([lat, lng], 16);
+                }, 100);
+            }
+
+            showEventDetails(eventId) {
+                alert(`Détails de l'événement ${eventId}\n\nFonctionnalité à venir : affichage détaillé des événements.`);
+            }
+
+            formatDate(timestamp) {
+                return new Date(timestamp).toLocaleString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
             }
 
             recordActivity(username, type, data) {
@@ -1121,7 +1912,6 @@
 
                 this.playerActivities[username].unshift(activity);
                 
-                // Garder seulement les 50 dernières activités
                 if (this.playerActivities[username].length > 50) {
                     this.playerActivities[username] = this.playerActivities[username].slice(0, 50);
                 }
@@ -1157,7 +1947,6 @@
                 if (confirm('Êtes-vous sûr de vouloir supprimer ce sticker ?')) {
                     this.stickers.splice(stickerIndex, 1);
                     
-                    // Enregistrer l'activité de suppression
                     this.recordActivity(currentUsername, 'delete', { 
                         club: sticker.club,
                         lat: sticker.lat,
@@ -1167,6 +1956,7 @@
                     this.saveStickers();
                     this.refreshMap();
                     this.updateProfile();
+                    this.refreshTooltipIfNeeded();
                     this.showNotification('Sticker supprimé !', 'success');
                 }
             }
@@ -1196,7 +1986,7 @@
                     const fontSize = clubAcronym.length <= 3 ? '10px' : '8px';
                     
                     const stickerIcon = L.divIcon({
-                        html: `<div style="background: linear-gradient(135deg, ${color}, ${color}dd); width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: ${fontSize};">${clubAcronym}</div>`,
+                        html: `<div style="background: linear-gradient(135deg, ${color}, ${color}dd); width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: ${fontSize}; cursor: pointer;">${clubAcronym}</div>`,
                         iconSize: [32, 32],
                         className: 'sticker-marker'
                     });
@@ -1206,6 +1996,9 @@
                             <div class="popup-title">${clubName}</div>
                             <div class="popup-meta">Posé par: <span onclick="showPlayerProfile('${sticker.username}')" style="color: var(--accent); cursor: pointer; text-decoration: underline;">${sticker.username}</span></div>
                             <div class="popup-time">${new Date(sticker.timestamp).toLocaleString('fr-FR')}</div>
+                            <button onclick="app.showStickerPage('${sticker.id}')" style="background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 12px; font-weight: 500; margin-top: 8px; width: 100%;">
+                                🔍 Voir les détails
+                            </button>
                     `;
                     
                     if (sticker.username === currentUsername && currentUsername) {
@@ -1218,6 +2011,14 @@
                         icon: stickerIcon,
                         isUserLocation: false
                     }).addTo(this.map).bindPopup(popupContent);
+                    
+                    // Ajouter un event listener pour le clic direct sur le marqueur
+                    marker.on('click', () => {
+                        // Petit délai pour permettre au popup de s'ouvrir d'abord
+                        setTimeout(() => {
+                            // Le clic sur le marqueur peut aussi ouvrir la page sticker
+                        }, 100);
+                    });
                     
                     this.stickerMarkers.set(sticker.id, marker);
                 });
@@ -1255,7 +2056,8 @@
                     const clubName = this.clubNames[club] || club;
                     
                     const item = document.createElement('div');
-                    item.className = 'ranking-item';
+                    item.className = 'ranking-item club-ranking-item';
+                    item.dataset.club = club;
                     item.innerHTML = `
                         <div class="ranking-content">
                             <span class="ranking-position">${index + 1}.</span>
@@ -1314,10 +2116,8 @@
                 const username = document.getElementById('username').value.trim();
                 if (!username) return;
 
-                // Mettre à jour le nom
                 document.getElementById('playerName').textContent = username;
 
-                // Mettre à jour l'avatar
                 const avatar = document.getElementById('playerAvatar');
                 const profile = this.playerProfiles[username];
                 if (profile && profile.avatar) {
@@ -1326,7 +2126,6 @@
                     avatar.textContent = username.charAt(0).toUpperCase();
                 }
 
-                // Mettre à jour le club
                 const playerClub = this.playerClubs[username];
                 const clubInfoDiv = document.getElementById('playerClubInfo');
                 const clubLogoDiv = document.getElementById('playerClubLogo');
@@ -1345,20 +2144,17 @@
                     clubInfoDiv.style.display = 'none';
                 }
 
-                // Calculer les statistiques
                 const playerStats = this.calculatePlayerStats(username);
                 document.getElementById('totalStickers').textContent = playerStats.totalStickers;
                 document.getElementById('playerRank').textContent = `#${playerStats.rank}`;
                 document.getElementById('totalOverrides').textContent = playerStats.overrides;
 
-                // Mettre à jour la timeline
                 this.updateActivityTimeline(username);
             }
 
             calculatePlayerStats(username) {
                 const totalStickers = this.stickers.filter(s => s.username === username).length;
                 
-                // Calculer le rang
                 const playerStats = {};
                 this.stickers.forEach(sticker => {
                     if (!playerStats[sticker.username]) {
@@ -1372,7 +2168,6 @@
                 
                 const rank = sortedPlayers.findIndex(([name]) => name === username) + 1;
 
-                // Calculer les surstickers
                 const activities = this.playerActivities[username] || [];
                 const overrides = activities.filter(a => a.type === 'override').length;
 
@@ -1429,7 +2224,6 @@
             }
 
             showPlayerProfile(username) {
-                // Simuler l'affichage du profil d'un autre joueur
                 alert(`Profil de ${username}\n\nFonctionnalité à venir : page profil détaillée pour chaque joueur !`);
             }
 
@@ -1438,6 +2232,7 @@
                     localStorage.setItem('footballStickersUsername', e.target.value);
                     this.loadStickers();
                     this.updateProfile();
+                    this.refreshTooltipIfNeeded();
                 });
 
                 document.getElementById('clubSelect').addEventListener('change', (e) => {
@@ -1447,6 +2242,7 @@
                         this.savePlayerClubs();
                         this.updatePlayerRanking();
                         this.updateProfile();
+                        this.refreshTooltipIfNeeded();
                     }
                     this.updateAccentColor(e.target.value);
                 });
@@ -1459,6 +2255,15 @@
                         this.updateAccentColor(this.playerClubs[savedUsername]);
                     }
                 }
+
+                // Gérer la navigation du navigateur
+                window.addEventListener('popstate', (event) => {
+                    if (event.state && event.state.stickerId) {
+                        this.showStickerPage(event.state.stickerId);
+                    } else {
+                        this.backToMap();
+                    }
+                });
             }
 
             updateAccentColor(club) {
@@ -1493,27 +2298,41 @@
         let app;
 
         function switchTab(tabName) {
-            // Mettre à jour les onglets
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            if (tabName !== 'sticker') {
+                document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            }
 
-            // Mettre à jour le contenu
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             document.getElementById(`${tabName}-tab`).classList.add('active');
 
-            // Rafraîchir la carte si nécessaire
             if (tabName === 'map' && app.map) {
+                // Nettoyer l'URL
+                const url = new URL(window.location);
+                url.searchParams.delete('stickerId');
+                window.history.pushState({}, '', url);
+                
                 setTimeout(() => app.map.invalidateSize(), 100);
             }
 
-            // Mettre à jour le profil si nécessaire
             if (tabName === 'profile') {
                 app.updateProfile();
             }
+
+            app.currentTab = tabName;
+        }
+
+        function backToMap() {
+            if (app.miniMap) {
+                app.miniMap.remove();
+                app.miniMap = null;
+            }
+            switchTab('map');
         }
 
         function changeAvatar() {
@@ -1545,3 +2364,4 @@
     </script>
 </body>
 </html>
+
