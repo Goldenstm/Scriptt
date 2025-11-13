@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -2618,5 +2619,491 @@
             app = new FootballStickersApp();
         });
     </script>
+    <!-- ===== Onboarding Profil (INSERER AVANT </body>) ===== -->
+<style>
+    /* Modal onboarding / profile UI */
+    .onboard-overlay {
+      position: fixed; inset: 0; background: rgba(2,3,10,0.75);
+      display: flex; align-items: center; justify-content: center; z-index: 99999;
+      padding: 24px;
+    }
+    .onboard-card {
+      width: 100%; max-width: 920px; border-radius: 16px;
+      background: linear-gradient(180deg, #0d0d1a, #16162b);
+      border: 1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.6);
+      padding: 22px; color: #e7e9ff; display: grid; grid-template-columns: 420px 1fr; gap: 18px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    .onboard-left { display:flex; flex-direction:column; gap:12px; }
+    .onboard-right { padding: 6px 12px; display:flex; flex-direction:column; gap:12px; }
+    .onboard-title { font-size: 1.2rem; font-weight:700; color: #fff; margin-bottom: 6px; }
+    .input-row { display:flex; gap:8px; }
+    label { font-size: 0.78rem; color: #9aa0d6; display:block; margin-bottom:6px; }
+    input[type="text"], input[type="number"], textarea, select {
+      width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.05);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      color: #e7e9ff; font-size:0.95rem;
+    }
+    textarea { min-height:80px; resize:vertical; }
+    .btn {
+      background: linear-gradient(90deg,#5f6ef8,#7b4bd6); color: white; border: none; padding:10px 14px;
+      border-radius:10px; font-weight:700; cursor:pointer;
+    }
+    .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.06); color:#cfd5ff; }
+    .avatar-preview { background: linear-gradient(180deg,#0b0b18,#151529); border-radius:12px; padding:16px; display:flex; align-items:center; justify-content:center; }
+    .avatar-canvas { width: 320px; height: 360px; display:block; }
+    .controls-inline { display:flex; gap:8px; flex-wrap:wrap; }
+    .chip { padding:8px 10px; border-radius:999px; border:1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02); cursor:pointer; font-size:0.9rem; }
+    .chip.active { border-color: rgba(255,255,255,0.12); background: linear-gradient(90deg,#3f4bff22,#7b4bd622); }
+    .small-note { font-size:0.78rem; color:#9aa0d6; margin-top:6px; }
+    .profile-summary { background: linear-gradient(180deg,#0e0e1b,#14142a); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.03); }
+    @media (max-width: 920px) {
+      .onboard-card { grid-template-columns: 1fr; }
+      .avatar-canvas { width: 100%; height: 280px; }
+    }
+  </style>
+  
+  <div id="onboardModal" class="onboard-overlay" style="display:none;">
+    <div class="onboard-card" role="dialog" aria-modal="true" aria-label="Configuration du profil">
+      <div class="onboard-left">
+        <div>
+          <div class="onboard-title">Personnalise ton profil de supporter</div>
+          <div class="small-note">Remplis ces infos pour incarner ton supporter sur la carte.</div>
+        </div>
+  
+        <div class="avatar-preview">
+          <!-- SVG avatar simple : tête + corps + maillot -->
+          <svg id="avatarSVG" class="avatar-canvas" viewBox="0 0 320 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Aperçu avatar">
+            <defs>
+              <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="6" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+  
+            <!-- background glow -->
+            <circle cx="160" cy="120" r="110" fill="#0f0f23" opacity="0.6" />
+            <!-- torso (maillot) -->
+            <rect id="torso" x="70" y="160" width="180" height="150" rx="20" fill="#667eea"></rect>
+            <!-- collar / chest -->
+            <path id="collar" d="M130 160 q30 -18 60 0 v12 q-30 8 -60 0 z" fill="#ffffff" opacity="0.06"></path>
+            <!-- head -->
+            <circle id="head" cx="160" cy="84" r="46" fill="#ffd9b6"></circle>
+            <!-- hair placeholder -->
+            <ellipse id="hair" cx="160" cy="60" rx="62" ry="28" fill="#1f1b2d" />
+            <!-- badge (small circle) -->
+            <circle id="badge" cx="240" cy="200" r="18" fill="#fff" stroke="rgba(255,255,255,0.08)" stroke-width="2"></circle>
+            <text id="badgeTxt" x="240" y="205" font-size="12" text-anchor="middle" fill="#000" font-weight="700">PSG</text>
+          </svg>
+        </div>
+  
+        <div style="display:flex; gap:10px; margin-top:8px; align-items:center;">
+          <button id="editPreviewBtn" class="btn-ghost" type="button">Modifier l'aperçu</button>
+          <div style="flex:1;"></div>
+          <button id="skipOnboard" class="btn-ghost">Passer</button>
+          <button id="saveProfileBtn" class="btn">Sauvegarder</button>
+        </div>
+      </div>
+  
+      <div class="onboard-right">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div style="flex:1;">
+            <label>Pseudo</label>
+            <input id="onb-username" type="text" placeholder="Ton pseudo" maxlength="20">
+          </div>
+          <div style="width:120px;">
+            <label>Genre</label>
+            <select id="onb-gender">
+              <option value="non-binaire">Non-genre</option>
+              <option value="homme">Homme</option>
+              <option value="femme">Femme</option>
+            </select>
+          </div>
+        </div>
+  
+        <div style="display:flex; gap:12px;">
+          <div style="flex:1;">
+            <label>Nationalité</label>
+            <input id="onb-nationality" type="text" placeholder="France">
+          </div>
+          <div style="width:160px;">
+            <label>Région</label>
+            <select id="onb-region">
+              <option value="">Choisir une région</option>
+              <option>Île-de-France</option>
+              <option>Auvergne-Rhône-Alpes</option>
+              <option>Provence-Alpes-Côte d'Azur</option>
+              <option>Hauts-de-France</option>
+              <option>Nouvelle-Aquitaine</option>
+              <option>Occitanie</option>
+              <option>Grand Est</option>
+              <option>Bretagne</option>
+              <option>Normandie</option>
+              <option>Bourgogne-Franche-Comté</option>
+            </select>
+          </div>
+        </div>
+  
+        <div style="display:flex; gap:12px; margin-top:8px;">
+          <div style="flex:1;">
+            <label>Supporte depuis (année)</label>
+            <input id="onb-since" type="number" min="1900" max="2025" placeholder="2012">
+          </div>
+          <div style="width:160px;">
+            <label>Club favori</label>
+            <select id="onb-club">
+              <option value="">Choisir</option>
+              <option value="PSG">Paris Saint-Germain</option>
+              <option value="Lyon">Olympique Lyonnais</option>
+              <option value="OM">Olympique de Marseille</option>
+              <option value="Monaco">AS Monaco</option>
+              <option value="Lille">Lille OSC</option>
+              <option value="Rennes">Stade Rennais</option>
+              <option value="Nice">OGC Nice</option>
+              <option value="Strasbourg">RC Strasbourg</option>
+              <option value="Nantes">FC Nantes</option>
+              <option value="Bordeaux">FC Girondins</option>
+              <option value="Lens">RC Lens</option>
+              <option value="Saint-Etienne">AS Saint-Étienne</option>
+            </select>
+          </div>
+        </div>
+  
+        <div>
+          <label>Bio (optionnel)</label>
+          <textarea id="onb-bio" placeholder="Ta petite phrase de supporter..."></textarea>
+        </div>
+  
+        <div>
+          <label>Maillots proposés</label>
+          <div id="kitOptions" class="controls-inline">
+            <!-- chips seront générés JS -->
+          </div>
+          <div class="small-note">Les maillots sont stylisés, pas d'usage de logos officiels.</div>
+        </div>
+  
+        <div style="margin-top:8px;">
+          <label>Accessoires</label>
+          <div class="controls-inline" id="accessoryOpts">
+            <div class="chip" data-acc="echarpe">Écharpe</div>
+            <div class="chip" data-acc="drapeau">Drapeau</div>
+            <div class="chip" data-acc="casquette">Casquette</div>
+            <div class="chip" data-acc="lunettes">Lunettes</div>
+          </div>
+        </div>
+  
+        <div style="margin-top:8px;">
+          <div class="profile-summary">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div id="summaryName" style="font-weight:700;">Pseudo</div>
+                <div id="summaryClub" style="color:#9aa0d6; font-size:0.9rem;">Club</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-weight:700;" id="summarySince">Depuis -</div>
+                <div style="font-size:0.85rem; color:#9aa0d6;" id="summaryRegion">Région</div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    (function(){
+      // club color presets (stylized)
+      const CLUB_COLORS = {
+        'PSG': ['#0b2240','#9b2b9b','#334ef2'],
+        'Lyon': ['#c41e3a','#ffffff','#0b3164'],
+        'OM': ['#012b5a','#8dd0ff','#ffffff'],
+        'Monaco': ['#d33f2b','#ffffff','#f5d1c7'],
+        'Lille': ['#c8102e','#ffc857','#ffffff'],
+        'Rennes': ['#e10600','#ffde59','#1b3a5a'],
+        'Nice': ['#c8102e','#000000','#f2f2f2'],
+        'Strasbourg': ['#006fb9','#ffffff','#00a1de'],
+        'Nantes': ['#f8e400','#1b5e20','#ffffff'],
+        'Bordeaux': ['#002d52','#b1002d','#ffffff'],
+        'Lens': ['#d60000','#ffd200','#000000'],
+        'Saint-Etienne': ['#2e8b57','#ffffff','#bfe6c4']
+      };
+  
+      // helpers
+      const $ = (id)=>document.getElementById(id);
+      const el = (qs)=>document.querySelector(qs);
+  
+      // DOM references
+      const onboardModal = $('onboardModal');
+      const usernameInp = $('onb-username');
+      const genderSel = $('onb-gender');
+      const natInp = $('onb-nationality');
+      const regionSel = $('onb-region');
+      const sinceInp = $('onb-since');
+      const clubSel = $('onb-club');
+      const bioTA = $('onb-bio');
+      const kitOptions = $('kitOptions');
+      const accessoryOpts = $('accessoryOpts');
+      const saveBtn = $('saveProfileBtn');
+      const skipBtn = $('skipOnboard');
+      const avatarSVG = $('avatarSVG');
+      const badgeTxt = $('badgeTxt');
+      const torso = $('torso');
+      const hair = $('hair');
+      const head = $('head');
+      const collar = $('collar');
+      const summaryName = $('summaryName');
+      const summaryClub = $('summaryClub');
+      const summarySince = $('summarySince');
+      const summaryRegion = $('summaryRegion');
+      const editPreviewBtn = $('editPreviewBtn');
+  
+      // state
+      let profile = JSON.parse(localStorage.getItem('fs_profile')) || null;
+      let selectedKit = null;
+      let selectedAccessories = new Set();
+  
+      // init: show modal if no profile
+      function openOnboard() {
+        populateFromProfile();
+        renderKitChips();
+        updateSummary();
+        onboardModal.style.display = 'flex';
+      }
+  
+      // close and mark done
+      function closeOnboard(markDone = true) {
+        onboardModal.style.display = 'none';
+        if (markDone) localStorage.setItem('profileSetupDone', '1');
+      }
+  
+      // fill the kit chips based on club selection
+      function renderKitChips() {
+        kitOptions.innerHTML = '';
+        const club = clubSel.value;
+        const presets = CLUB_COLORS[club] || ['#667eea','#8f7ae8','#2c3e50'];
+        const labels = ['Home','Away','Third'];
+        presets.forEach((c, i) => {
+          const d = document.createElement('div');
+          d.className = 'chip' + (i===0 ? ' active' : '');
+          d.dataset.kit = i;
+          d.style.border = '1px solid rgba(255,255,255,0.04)';
+          d.innerHTML = `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${c};margin-right:8px;vertical-align:middle;"></span> ${labels[i]}`;
+          if (i===0) selectedKit = 0;
+          d.addEventListener('click', ()=> {
+            document.querySelectorAll('#kitOptions .chip').forEach(x=>x.classList.remove('active'));
+            d.classList.add('active');
+            selectedKit = parseInt(d.dataset.kit);
+            applyKitToAvatar();
+          });
+          kitOptions.appendChild(d);
+        });
+        applyKitToAvatar();
+      }
+  
+      // accessories toggles
+      accessoryOpts.querySelectorAll('.chip').forEach(c => {
+        c.addEventListener('click', ()=> {
+          const key = c.dataset.acc;
+          if (selectedAccessories.has(key)) {
+            selectedAccessories.delete(key); c.classList.remove('active');
+          } else {
+            selectedAccessories.add(key); c.classList.add('active');
+          }
+          renderAccessories();
+        });
+      });
+  
+      function renderAccessories() {
+        // simple: toggle badge text or add hair accessory
+        if (selectedAccessories.has('drapeau')) {
+          badgeTxt.textContent = '⚑';
+          badgeTxt.setAttribute('font-size','12');
+        } else {
+          badgeTxt.textContent = (clubSel.value || 'PSG').slice(0,3).toUpperCase();
+        }
+      }
+  
+      // apply kit colors to avatar
+      function applyKitToAvatar() {
+        const club = clubSel.value;
+        const presets = CLUB_COLORS[club] || ['#667eea','#8f7ae8','#2c3e50'];
+        const color = presets[selectedKit] || presets[0];
+        torso.setAttribute('fill', color);
+        // collar subtle tint
+        collar.setAttribute('fill', hexToRgba('#ffffff', 0.05));
+        // badge contrast: set white or dark based on lightness
+        badgeTxt.setAttribute('fill', getContrastTextColor(color));
+        badgeTxt.textContent = (club || 'PSG').slice(0,3).toUpperCase();
+      }
+  
+      // utility color helpers
+      function hexToRgba(hex, a=1) {
+        hex = hex.replace('#','');
+        const r = parseInt(hex.substring(0,2),16);
+        const g = parseInt(hex.substring(2,4),16);
+        const b = parseInt(hex.substring(4,6),16);
+        return `rgba(${r},${g},${b},${a})`;
+      }
+      function getContrastTextColor(hex) {
+        hex = hex.replace('#','');
+        const r = parseInt(hex.substring(0,2),16);
+        const g = parseInt(hex.substring(2,4),16);
+        const b = parseInt(hex.substring(4,6),16);
+        const yiq = ((r*299)+(g*587)+(b*114))/1000;
+        return (yiq >= 128) ? '#0b0b0b' : '#ffffff';
+      }
+  
+      // update summary box live
+      function updateSummary() {
+        summaryName.textContent = usernameInp.value || 'Pseudo';
+        summaryClub.textContent = clubSel.options[clubSel.selectedIndex]?.text || 'Aucun club';
+        summarySince.textContent = sinceInp.value ? `Depuis ${sinceInp.value}` : 'Depuis -';
+        summaryRegion.textContent = regionSel.value || '-';
+      }
+  
+      // populate input fields from existing profile if present
+      function populateFromProfile() {
+        if (!profile) {
+          // try to set defaults from localStorage fields (if any exist in app)
+          usernameInp.value = localStorage.getItem('football_username') || '';
+          natInp.value = '';
+          regionSel.value = '';
+          sinceInp.value = '';
+          bioTA.value = '';
+          clubSel.value = '';
+          genderSel.value = 'non-binaire';
+        } else {
+          usernameInp.value = profile.username || '';
+          natInp.value = profile.nationality || '';
+          regionSel.value = profile.region || '';
+          sinceInp.value = profile.since || '';
+          bioTA.value = profile.bio || '';
+          clubSel.value = profile.club || '';
+          genderSel.value = profile.gender || 'non-binaire';
+          selectedAccessories = new Set(profile.accessories || []);
+          // accessory chips reflect state
+          accessoryOpts.querySelectorAll('.chip').forEach(c=>{
+            const key=c.dataset.acc;
+            if (selectedAccessories.has(key)) c.classList.add('active'); else c.classList.remove('active');
+          });
+        }
+      }
+  
+      // save profile
+      function saveProfile(finalize=true) {
+        profile = {
+          username: usernameInp.value.trim() || 'Anonyme',
+          gender: genderSel.value,
+          nationality: natInp.value.trim(),
+          region: regionSel.value,
+          since: sinceInp.value,
+          club: clubSel.value,
+          bio: bioTA.value.trim(),
+          kitIndex: selectedKit,
+          accessories: Array.from(selectedAccessories),
+          updatedAt: Date.now()
+        };
+        localStorage.setItem('fs_profile', JSON.stringify(profile));
+        if (finalize) {
+          localStorage.setItem('profileSetupDone', '1');
+          closeOnboard(true);
+        }
+        applyProfileToUI();
+      }
+  
+      // apply profile to visible UI (update avatar pill, profile page)
+      function applyProfileToUI() {
+        // update avatar badge and torso
+        if (!profile) return;
+        clubSel.value = profile.club;
+        selectedKit = profile.kitIndex || 0;
+        selectedAccessories = new Set(profile.accessories || []);
+        renderKitChips();
+        renderAccessories();
+        applyKitToAvatar();
+  
+        // update any topbar / profile placeholders in page
+        const topName = document.getElementById('playerName') || document.getElementById('user-name');
+        if (topName) topName.textContent = profile.username;
+        const playerAvatar = document.getElementById('playerAvatar') || document.getElementById('user-avatar');
+        if (playerAvatar) {
+          // create a mini badge: first letter + colored bg from club
+          const letter = (profile.username || 'U').charAt(0).toUpperCase();
+          const clubCol = (CLUB_COLORS[profile.club] || ['#667eea'])[0];
+          playerAvatar.textContent = letter;
+          playerAvatar.style.background = clubCol;
+        }
+  
+        // profile stats placeholders
+        const playerClubName = document.getElementById('playerClubName');
+        const playerClubLogo = document.getElementById('playerClubLogo');
+        if (playerClubName) playerClubName.textContent = clubSel.options[clubSel.selectedIndex]?.text || 'Aucun club sélectionné';
+        if (playerClubLogo) {
+          const color = (CLUB_COLORS[profile.club]||['#667eea'])[0];
+          playerClubLogo.style.background = color;
+        }
+      }
+  
+      // basic interactions
+      clubSel.addEventListener('change', () => {
+        renderKitChips();
+        updateSummary();
+        renderAccessories();
+      });
+      usernameInp.addEventListener('input', updateSummary);
+      regionSel.addEventListener('change', updateSummary);
+      sinceInp.addEventListener('input', updateSummary);
+      bioTA.addEventListener('input', ()=>{ /* nothing heavy */ });
+  
+      saveBtn.addEventListener('click', (e)=>{
+        e.preventDefault();
+        if (!usernameInp.value.trim()) { alert('Choisis un pseudo.'); usernameInp.focus(); return; }
+        if (!clubSel.value) { alert('Choisis un club.'); clubSel.focus(); return; }
+        saveProfile(true);
+      });
+  
+      skipBtn.addEventListener('click', ()=> {
+        // allow skip but still mark small minimal profile
+        profile = profile || {};
+        profile.username = usernameInp.value.trim() || (profile.username || 'Anonyme');
+        profile.club = clubSel.value || profile.club || '';
+        localStorage.setItem('fs_profile', JSON.stringify(profile));
+        localStorage.setItem('profileSetupDone', '1');
+        applyProfileToUI();
+        closeOnboard(true);
+      });
+  
+      editPreviewBtn.addEventListener('click', ()=> {
+        // focus small tweak: toggle hair color for fun
+        const hairFill = hair.getAttribute('fill');
+        hair.setAttribute('fill', hairFill === '#1f1b2d' ? '#2b1b45' : '#1f1b2d');
+      });
+  
+      // on load: if onboarding not done -> open
+      document.addEventListener('DOMContentLoaded', ()=> {
+        // if profile exists but not applied, apply it
+        profile = JSON.parse(localStorage.getItem('fs_profile')) || profile;
+        const done = localStorage.getItem('profileSetupDone');
+        if (!done) {
+          // if previously had username in other parts of app, prefill
+          const existingUsername = localStorage.getItem('football_username');
+          if (existingUsername) usernameInp.value = existingUsername;
+          openOnboard();
+        } else {
+          // apply saved profile to UI
+          profile = JSON.parse(localStorage.getItem('fs_profile')) || null;
+          applyProfileToUI();
+        }
+      });
+  
+      // expose a global helper to re-open the onboarding
+      window.openProfileOnboarding = function() { openOnboard(); };
+  
+    })();
+  </script>
+  <!-- ===== Fin Onboarding Profil ===== -->
+  
 </body>
 </html>
