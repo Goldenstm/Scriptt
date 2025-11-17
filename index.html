@@ -1,6 +1,356 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accueil - FC Stickers (v2)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg-1:#0d0d17;--bg-2:#111126;--card:#141428;--muted:#9aa0d6;--accent:#5f6ef8;--radius:14px;--glass:rgba(255,255,255,0.03)}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial;color:#fff;background:linear-gradient(180deg,var(--bg-1),#070712)}
+
+    .top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-bottom:1px solid var(--glass)}
+    .top-left{display:flex;gap:10px;align-items:center}
+    .btn-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--glass);cursor:pointer}
+    .title-pill{padding:8px 16px;border-radius:999px;background:linear-gradient(90deg, rgba(95,110,248,0.12), rgba(123,75,214,0.06));color:var(--muted);font-weight:600}
+
+    .content{padding:14px;display:flex;flex-direction:column;gap:12px}
+    .card{background:var(--card);border-radius:var(--radius);padding:12px;border:1px solid var(--glass);box-shadow:0 10px 30px rgba(0,0,0,0.45)}
+    .card.large{height:160px}
+    .card.medium{height:120px}
+
+    .section-title{font-weight:700;margin-bottom:8px}
+    .muted{color:var(--muted);font-size:13px}
+
+    /* Photo button & swipe */
+    .photo-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;width:96px;height:96px;display:flex;align-items:center;justify-content:center;z-index:60}
+    .photo-btn{width:74px;height:74px;border-radius:50%;background:linear-gradient(180deg,var(--accent),#7b4bd6);display:flex;align-items:center;justify-content:center;font-size:26px;border:4px solid rgba(255,255,255,0.06);box-shadow:0 10px 30px rgba(95,110,248,0.15);touch-action:none;transition:transform .18s ease, background .18s ease}
+    .photo-halo{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle, rgba(95,110,248,0.08), transparent 40%);pointer-events:none}
+    .swipe-hint{position:fixed;bottom:130px;left:50%;transform:translateX(-50%);display:flex;gap:36px;align-items:center;color:var(--muted);font-size:13px}
+    .swipe-chip{background:rgba(255,255,255,0.02);padding:8px 12px;border-radius:999px;border:1px solid var(--glass)}
+
+    /* dynamic color classes for btn */
+    .btn-red{background:linear-gradient(180deg,#b91c1c,#ef4444)}
+    .btn-blue{background:linear-gradient(180deg,#1f6feb,#3b82f6)}
+
+    /* Zone popup */
+    .zone-popup{position:fixed;left:50%;transform:translateX(-50%) translateY(-10px);top:16px;width:calc(100% - 40px);max-width:520px;padding:12px;border-radius:12px;background:linear-gradient(180deg,#171725,#0f1020);border:1px solid rgba(95,110,248,0.12);box-shadow:0 14px 30px rgba(0,0,0,0.6);z-index:70;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.2,.9,.2,1)}
+    .zone-popup.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+
+    /* pages (lateral slide) */
+    .pages{position:relative;overflow:hidden}
+    .page{min-height:70vh;padding-bottom:160px;transition:transform .45s cubic-bezier(.2,.9,.2,1);position:relative}
+    .page-inner{max-width:960px;margin:0 auto}
+
+    /* notification */
+    .notif-panel{position:fixed;right:12px;top:68px;background:var(--card);border-radius:12px;padding:10px;width:320px;max-width:calc(100% - 24px);border:1px solid var(--glass);z-index:80;display:none}
+    .notif-panel.show{display:block}
+
+    /* profile modal */
+    .overlay{position:fixed;inset:0;background:linear-gradient(180deg, rgba(3,3,8,0.7), rgba(3,3,8,0.85));display:flex;align-items:center;justify-content:center;z-index:100}
+    .modal{width:calc(100% - 40px);max-width:920px;background:linear-gradient(180deg,#0d0d17,#141428);border-radius:16px;padding:18px;border:1px solid var(--glass);display:grid;grid-template-columns:360px 1fr;gap:14px}
+
+    /* photo / camera styles (confirmation) */
+    .camera-frame{width:100%;height:380px;background:linear-gradient(135deg,#0f1018,#0b0b12);border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid var(--glass);overflow:hidden}
+    .preview-image{max-width:100%;max-height:100%;object-fit:cover}
+
+    /* small animation helpers */
+    .fade-scale{animation:fadeScale .32s ease both}
+    @keyframes fadeScale{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+
+    /* responsive */
+    @media(max-width:480px){.modal{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-left">
+      <div id="btnProfile" class="btn-icon" title="Profil">👤</div>
+      <div class="title-pill">ZONE CAPTURÉE</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="btnShop" class="btn-icon" title="Boutique">🛒</div>
+      <div id="btnNotif" class="btn-icon" title="Notifications">🔔</div>
+    </div>
+  </div>
+
+  <div id="zonePopup" class="zone-popup" aria-live="polite"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><div><div class="zone-title" style="font-weight:800;color:var(--accent)">Zone capturée</div><div class="muted">Vous avez pris le contrôle d'un quartier — + points équipe</div></div><div style="text-align:right;color:var(--muted);font-size:13px">Il y a 2 min</div></div></div>
+
+  <div class="pages" id="pagesContainer">
+    <!-- Page 1 (Carte) -->
+    <div id="page1" class="page" style="transform:translateX(0)">
+      <div class="page-inner content">
+        <div id="rankingCard" class="card large"><div class="section-title">Classements</div><div class="muted">Position nationale et dans votre région</div><div id="rankingContent" style="margin-top:12px"></div></div>
+        <div id="lastStickers" class="card large"><div class="section-title">Derniers stickers en activité</div><div class="muted">Vos actions récentes</div><div id="stickersList" style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:86px;overflow:auto"></div></div>
+        <div id="historyCard" class="card medium"><div style="display:flex;justify-content:space-between;align-items:center"><div class="section-title">Historique</div><div class="muted">Actions récentes</div></div><div id="historyList" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;max-height:68px;overflow:auto"></div></div>
+      </div>
+    </div>
+
+    <!-- Page 2 (Photo / Camera) - placed to right initially -->
+    <div id="page2" class="page" style="transform:translateX(100%)">
+      <div class="page-inner content">
+        <div class="section-title">📷 Prendre une photo</div>
+        <div class="card">
+          <div class="camera-frame" id="cameraFrame">
+            <div id="cameraPlaceholder" style="text-align:center;color:var(--muted)"><div style="font-size:48px">📷</div><div>Appuyez sur Capturer ou utilisez la galerie</div></div>
+            <video id="videoPreview" style="display:none;width:100%;height:100%;object-fit:cover" autoplay playsinline></video>
+            <img id="imagePreview" style="display:none;max-width:100%;max-height:100%;object-fit:cover" />
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button id="takePictureBtn" class="btn" style="background:linear-gradient(90deg,var(--accent),#7b4bd6);">Démarrer la caméra</button>
+            <button id="captureBtn" class="btn" style="display:none">📸 Capturer</button>
+            <label for="fileInput" class="btn btn-ghost" style="border:1px solid var(--glass);">🖼️ Choisir depuis la galerie</label>
+            <input type="file" id="fileInput" style="display:none" accept="image/*" />
+            <button id="retakeBtn" class="btn btn-ghost" style="display:none">🔄 Reprendre</button>
+            <button id="continueBtn" class="btn" style="display:none;background:linear-gradient(90deg,#f59e0b,#d97706)">➡️ Continuer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page 3 (Confirmation) - placed to right further -->
+    <div id="page3" class="page" style="transform:translateX(200%)">
+      <div class="page-inner content">
+        <div class="section-title">✅ Confirmer le sticker</div>
+        <div class="card" id="confirmCard">
+          <div style="display:grid;grid-template-columns:1fr;gap:12px">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:120px;height:120px;border-radius:12px;overflow:hidden;border:1px solid var(--glass);background:#000;display:flex;align-items:center;justify-content:center" id="finalImageWrap"><img id="finalImage" style="max-width:100%;height:100%;object-fit:cover"/></div>
+              <div style="flex:1">
+                <div id="confirmType" style="font-weight:800;font-size:18px">Type</div>
+                <div id="confirmPoints" class="muted" style="margin-top:6px">Points</div>
+                <div id="confirmWhen" class="muted" style="margin-top:6px">Heure</div>
+              </div>
+            </div>
+
+            <div>
+              <label class="muted">Club</label>
+              <select id="clubInput" style="width:100%;padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.04)"></select>
+            </div>
+
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+              <button id="deleteBtn" class="btn" style="background:linear-gradient(90deg,#ef4444,#b91c1c)">🗑️ Supprimer</button>
+              <button id="saveBtn" class="btn" style="background:linear-gradient(90deg,#10b981,#059669)">💾 Enregistrer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo button (fixed) -->
+  <div class="photo-wrap">
+    <div class="photo-halo" aria-hidden="true"></div>
+    <div id="photoBtn" class="photo-btn" role="button" aria-label="Prendre photo">📷</div>
+  </div>
+
+  <!-- Notifications -->
+  <div id="notifPanel" class="notif-panel" aria-hidden="true"><div style="font-weight:700;margin-bottom:8px">Notifications</div><div id="notifList" style="display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto"></div></div>
+
+  <!-- Profile modal -->
+  <div id="profileModal" class="overlay" style="display:none"><div class="modal" role="dialog"><div><div style="font-weight:800;font-size:20px;margin-bottom:8px">Personnalise ton profil</div><div style="background:linear-gradient(180deg,#0b0b12,#151529);border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:center"><svg width="220" height="240" viewBox="0 0 320 360"><circle cx="160" cy="84" r="46" fill="#ffd9b6"/><ellipse cx="160" cy="60" rx="62" ry="28" fill="#1f1b2d"/><rect x="70" y="160" width="180" height="150" rx="20" fill="#667eea"/></svg></div></div><div><div style="display:flex;gap:8px;margin-bottom:8px"><input id="pUsername" placeholder="Pseudo" /><select id="pGender"><option value="non">Non-genre</option><option value="homme">Homme</option><option value="femme">Femme</option></select></div><div style="display:flex;gap:8px;margin-bottom:8px"><input id="pNationality" placeholder="Nationalité" /><select id="pRegion"><option value="">Région</option><option>Île-de-France</option><option>Auvergne-Rhône-Alpes</option><option>Provence-Alpes-Côte d'Azur</option><option>Hauts-de-France</option></select></div><div style="margin-bottom:8px"><select id="pClubModal"></select></div><div style="margin-bottom:8px"><textarea id="pBio" placeholder="Bio (optionnel)"></textarea></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px"><button id="saveProfile" class="btn">Sauvegarder</button><button id="closeProfile" class="btn btn-ghost">Fermer</button></div></div></div></div>
+
+  <script>
+    /* ====== Configurable game rules per ta demande ====== */
+    const GAME_RULES = { points: { sticker: 1, surstick: 3 }, colors: { sticker: '#ef4444', surstick: '#1f6feb' }, swipeThreshold: 60 };
+
+    /* ====== Mock API helpers (ranking/stickers) ====== */
+    function mockFetchRanking(){ return new Promise(res=>setTimeout(()=>res({national:{rank:42,points:1240},regional:{region:'Île-de-France',rank:3,points:320}}),300)); }
+    function mockFetchStickers(){ return new Promise(res=>setTimeout(()=>res([{id:1,club:'PSG',action:'posé',when:Date.now()-1000*60*5,lat:48.85,lng:2.35},{id:2,club:'OM',action:'sursticker',when:Date.now()-1000*60*30,lat:43.30,lng:5.37}]),200)); }
+
+    /* ====== State ====== */
+    let appState = { currentPage:1, selectedCoords:null, capturedImage:null, pendingType:null, stream:null, stickers: JSON.parse(localStorage.getItem('stickers_meta')||'[]') };
+
+    /* ====== Elements ====== */
+    const pages = document.getElementById('pagesContainer');
+    const page1 = document.getElementById('page1'), page2 = document.getElementById('page2'), page3 = document.getElementById('page3');
+    const photoBtn = document.getElementById('photoBtn');
+    const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+    const videoPreview = document.getElementById('videoPreview');
+    const imagePreview = document.getElementById('imagePreview');
+    const captureBtn = document.getElementById('captureBtn');
+    const takePictureBtn = document.getElementById('takePictureBtn');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const continueBtn = document.getElementById('continueBtn');
+    const finalImage = document.getElementById('finalImage');
+    const confirmType = document.getElementById('confirmType');
+    const confirmPoints = document.getElementById('confirmPoints');
+    const confirmWhen = document.getElementById('confirmWhen');
+    const clubInput = document.getElementById('clubInput');
+
+    // notifications
+    let notifications = JSON.parse(localStorage.getItem('fs_notifications')||'[]');
+
+    /* ====== Init UI data ====== */
+    (function initUI(){
+      // fill club selects
+      const clubs = ['','PSG','Lyon','OM','Monaco','Lille','Rennes','Nice','Strasbourg','Nantes','Bordeaux','Lens','Saint-Etienne'];
+      clubs.forEach(c=>{ const opt=document.createElement('option'); opt.value=c; opt.textContent=c||'Choisir un club'; clubInput.appendChild(opt); const opt2=document.createElement('option'); opt2.value=c; opt2.textContent=c||'Choisir un club'; document.getElementById('pClubModal').appendChild(opt2); });
+      renderNotifications(); loadDynamic();
+      // first time: if no profile, open modal
+      if(!localStorage.getItem('profileSetupDone')){ document.getElementById('profileModal').style.display='flex'; }
+    })();
+
+    /* ====== Dynamic content loaders ====== */
+    async function loadDynamic(){ const r=await mockFetchRanking(); document.getElementById('rankingContent').innerHTML=`<div style="display:flex;justify-content:space-between"><div><strong>France</strong> #${r.national.rank}</div><div><strong>${r.national.points} pts</strong></div></div><div style="margin-top:8px"><strong>${r.regional.region}</strong> #${r.regional.rank} — ${r.regional.points} pts</div>`; const s=await mockFetchStickers(); const sl=document.getElementById('stickersList'); sl.innerHTML=''; s.forEach(it=>{ const d=document.createElement('div'); d.style.display='flex'; d.style.justifyContent='space-between'; d.style.alignItems='center'; d.style.padding='10px'; d.style.borderRadius='10px'; d.style.border='1px solid rgba(255,255,255,0.03)'; d.style.background='rgba(255,255,255,0.01)'; d.innerHTML=`<div><div style="font-weight:700">${it.club} • ${it.action}</div><div class="muted">${new Date(it.when).toLocaleTimeString()}</div></div><div style="font-size:12px;color:var(--muted)">${it.lat.toFixed(2)}, ${it.lng.toFixed(2)}</div>`; sl.appendChild(d); });
+      // history
+      const hist = JSON.parse(localStorage.getItem('fs_history')||'[]'); const hl=document.getElementById('historyList'); hl.innerHTML=''; if(hist.length===0){ hl.innerHTML='<div class="muted">Aucune activité récente</div>'; } else { hist.slice(0,6).forEach(h=>{ const el=document.createElement('div'); el.className='muted'; el.textContent=`${h.action} — ${h.when}`; hl.appendChild(el); }); }
+    }
+
+    /* ====== Notifications ====== */
+    function renderNotifications(){ const el=document.getElementById('notifList'); el.innerHTML=''; if(notifications.length===0){ el.innerHTML='<div class="muted">Aucune notification</div>'; } else notifications.forEach(n=>{ const d=document.createElement('div'); d.style.padding='8px'; d.style.borderRadius='8px'; d.style.background='rgba(255,255,255,0.02)'; d.innerHTML=`<div style="font-weight:700">${n.title}</div><div class=\"muted\">${n.body}</div>`; el.appendChild(d); }); }
+    function pushNotification(title, body){ notifications.unshift({id:Date.now(),title,body,ts:Date.now()}); localStorage.setItem('fs_notifications',JSON.stringify(notifications)); renderNotifications(); }
+
+    /* ====== Page transitions (lateral slide) ====== */
+    function showPage(n){ const offsets = {1:0,2:-100,3:-200}; page1.style.transform = `translateX(${offsets[1]}%)`; page2.style.transform = `translateX(${offsets[2]}%)`; page3.style.transform = `translateX(${offsets[3]}%)`; // compute base translate shift for container: we moved pages themselves
+      appState.currentPage = n; }
+
+    /* ====== Camera flow and swipe on photo button (Version A) ====== */
+    let touchStartX=null, touchStartY=null, dragging=false;
+
+    function vibrate(duration=40){ if(navigator.vibrate) navigator.vibrate(duration); }
+
+    photoBtn.addEventListener('touchstart',(e)=>{
+      const t=e.touches[0]; touchStartX=t.clientX; touchStartY=t.clientY; dragging=true; photoBtn.style.transition='none';
+    },{passive:true});
+
+    photoBtn.addEventListener('touchmove',(e)=>{
+      if(!dragging) return; const t=e.touches[0]; const dx=t.clientX-touchStartX; // provide visual feedback
+      photoBtn.style.transform = `translateX(${dx}px) translateY(0)`;
+      // color feedback
+      if(dx>GAME_RULES.swipeThreshold){ photoBtn.classList.add('btn-blue'); photoBtn.classList.remove('btn-red'); } else if(dx<-GAME_RULES.swipeThreshold){ photoBtn.classList.add('btn-red'); photoBtn.classList.remove('btn-blue'); } else { photoBtn.classList.remove('btn-red'); photoBtn.classList.remove('btn-blue'); }
+    },{passive:true});
+
+    photoBtn.addEventListener('touchend',(e)=>{
+      if(!dragging) return; dragging=false; photoBtn.style.transition='transform .18s ease, background .18s ease'; photoBtn.style.transform='translateX(0)';
+      // determine final dx
+      const changed = e.changedTouches[0]; const dx = changed.clientX - touchStartX;
+      if(dx > GAME_RULES.swipeThreshold){ // RIGHT -> SURSTICK
+        vibrate(50);
+        appState.pendingType = 'surstick';
+        // animate quick flash to blue
+        photoBtn.classList.add('btn-blue'); setTimeout(()=>photoBtn.classList.remove('btn-blue'),300);
+        // open camera
+        openCameraAndPrepare();
+      } else if(dx < -GAME_RULES.swipeThreshold){ // LEFT -> STICKER
+        vibrate(50);
+        appState.pendingType = 'sticker';
+        photoBtn.classList.add('btn-red'); setTimeout(()=>photoBtn.classList.remove('btn-red'),300);
+        openCameraAndPrepare();
+      } else {
+        // short tap fallback -> open camera in default mode (sticker)
+        appState.pendingType = 'sticker';
+        openCameraAndPrepare();
+      }
+    },{passive:true});
+
+    // desktop / mouse testing (click+drag)
+    let mouseDown=false, mdStartX=0;
+    photoBtn.addEventListener('mousedown',(e)=>{ mouseDown=true; mdStartX=e.clientX; photoBtn.style.transition='none'; });
+    document.addEventListener('mousemove',(e)=>{ if(!mouseDown) return; const dx=e.clientX-mdStartX; photoBtn.style.transform=`translateX(${dx}px)`; if(dx>GAME_RULES.swipeThreshold){ photoBtn.classList.add('btn-blue'); photoBtn.classList.remove('btn-red'); } else if(dx<-GAME_RULES.swipeThreshold){ photoBtn.classList.add('btn-red'); photoBtn.classList.remove('btn-blue'); } else { photoBtn.classList.remove('btn-red'); photoBtn.classList.remove('btn-blue'); } });
+    document.addEventListener('mouseup',(e)=>{ if(!mouseDown) return; mouseDown=false; photoBtn.style.transition='transform .18s ease'; photoBtn.style.transform='translateX(0)'; const dx=e.clientX-mdStartX; if(dx>GAME_RULES.swipeThreshold){ appState.pendingType='surstick'; openCameraAndPrepare(); } else if(dx<-GAME_RULES.swipeThreshold){ appState.pendingType='sticker'; openCameraAndPrepare(); } else { appState.pendingType='sticker'; openCameraAndPrepare(); } });
+
+    async function openCameraAndPrepare(){
+      // slide to page 2 (right to left)
+      showPage(2);
+      // small visual entrance
+      page2.classList.add('fade-scale'); setTimeout(()=>page2.classList.remove('fade-scale'),360);
+      // start camera
+      await startCamera();
+    }
+
+    async function startCamera(){
+      try{
+        appState.stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode: 'environment' }, audio:false });
+        videoPreview.srcObject = appState.stream; videoPreview.style.display='block'; cameraPlaceholder.style.display='none'; captureBtn.style.display='inline-block'; retakeBtn.style.display='inline-block'; takePictureBtn.style.display='none';
+      }catch(err){ console.error('Camera error',err); pushNotification('Erreur caméra','Impossible d\'accéder à la caméra'); }
+    }
+
+    function stopCamera(){ if(appState.stream){ appState.stream.getTracks().forEach(t=>t.stop()); appState.stream=null; } }
+
+    captureBtn.addEventListener('click',()=>{ capturePhoto(); });
+    takePictureBtn.addEventListener('click',()=>{ openCameraAndPrepare(); });
+    retakeBtn.addEventListener('click',()=>{ resetPhotoPage(); openCameraAndPrepare(); });
+
+    // file input
+    document.getElementById('fileInput').addEventListener('change', (e)=>{ handleFileSelect(e); });
+
+    function capturePhoto(){ const v = videoPreview; const canvas = document.createElement('canvas'); canvas.width = v.videoWidth; canvas.height = v.videoHeight; const ctx = canvas.getContext('2d'); ctx.drawImage(v,0,0); const data = canvas.toDataURL('image/jpeg',0.8); appState.capturedImage = data; imagePreview.src = data; imagePreview.style.display='block'; videoPreview.style.display='none'; captureBtn.style.display='none'; continueBtn.style.display='inline-block'; stopCamera(); // proceed to confirmation with animation
+      setTimeout(()=>{ // slide to confirmation (page3)
+        // set type info
+        prepareConfirmation();
+        showPage(3);
+        page3.classList.add('fade-scale'); setTimeout(()=>page3.classList.remove('fade-scale'),360);
+      },600);
+    }
+
+    function handleFileSelect(e){ const file = e.target.files[0]; if(!file) return; if(!file.type.startsWith('image/')){ pushNotification('Format non supporté','Choisis une image'); return; } if(file.size > 5*1024*1024){ pushNotification('Fichier trop lourd','Max 5MB'); return; } const reader=new FileReader(); reader.onload=(ev)=>{ appState.capturedImage = ev.target.result; imagePreview.src = appState.capturedImage; imagePreview.style.display='block'; cameraPlaceholder.style.display='none'; videoPreview.style.display='none'; captureBtn.style.display='none'; continueBtn.style.display='inline-block'; retakeBtn.style.display='inline-block'; // then confirmation as above
+        setTimeout(()=>{ prepareConfirmation(); showPage(3); page3.classList.add('fade-scale'); setTimeout(()=>page3.classList.remove('fade-scale'),360); },500);
+    }; reader.readAsDataURL(file); }
+
+    function resetPhotoPage(){ imagePreview.style.display='none'; videoPreview.style.display='none'; cameraPlaceholder.style.display='block'; captureBtn.style.display='none'; retakeBtn.style.display='none'; continueBtn.style.display='none'; takePictureBtn.style.display='inline-block'; stopCamera(); appState.capturedImage=null; }
+
+    function prepareConfirmation(){ // populate confirmation with type, points, image, time, default club
+      finalImage.src = appState.capturedImage || '';
+      const t = appState.pendingType || 'sticker'; const label = (t==='surstick')? 'SURSTICK' : 'STICKER'; confirmType.textContent = label; const pts = (t==='surstick')? GAME_RULES.points.surstick : GAME_RULES.points.sticker; confirmPoints.textContent = `+${pts} pts`; confirmWhen.textContent = new Date().toLocaleString(); // default club from profile
+      const p = JSON.parse(localStorage.getItem('fs_profile')||'{}'); if(p.club) clubInput.value = p.club; else clubInput.value='';
+    }
+
+    // Save sticker: storage option B = temporary & planned upload.
+    // We will store metadata + a small thumbnail (compressed) to localStorage to keep a trace.
+    async function saveSticker(){ const club = clubInput.value; if(!club){ pushNotification('Choisis un club','Sélectionne le club du maillot'); return; } if(!appState.capturedImage){ pushNotification('Aucune photo','Prends ou choisis une photo'); return; }
+      // get location high-precision
+      let coords = null; try{ coords = await new Promise((resolve, reject)=>{ navigator.geolocation.getCurrentPosition(pos=>resolve({lat:pos.coords.latitude,lng:pos.coords.longitude}), err=>{ console.warn('geo err',err); resolve(appState.selectedCoords || null); }, {enableHighAccuracy:true,timeout:7000} ); }); }catch(e){ coords = appState.selectedCoords || null; }
+
+      // build thumbnail to save small (300px max)
+      const thumb = await makeThumbnail(appState.capturedImage,300);
+
+      const type = appState.pendingType || 'sticker'; const points = (type==='surstick')? GAME_RULES.points.surstick : GAME_RULES.points.sticker;
+      const meta = { id:Date.now(), type, timestamp: new Date().toISOString(), club, points, location: coords, thumbnail: thumb };
+
+      // add to stickers meta array
+      appState.stickers.unshift(meta); localStorage.setItem('stickers_meta', JSON.stringify(appState.stickers));
+      // push to history
+      const hist = JSON.parse(localStorage.getItem('fs_history')||'[]'); hist.unshift({action: (type==='surstick'?'Sursticker posé':'Sticker posé'), when: new Date().toLocaleTimeString()}); localStorage.setItem('fs_history', JSON.stringify(hist));
+
+      pushNotification('Sticker enregistré', `${type==='surstick'?'Surstick':'Stick'} enregistré — +${points} pts`);
+
+      // After saving, return to map (page1) and refresh dynamic lists
+      setTimeout(()=>{ resetPhotoPage(); showPage(1); loadDynamic(); },900);
+
+      // TODO: here you would enqueue upload to server: meta + full image. For now we keep thumbnail only (storage option B).
+    }
+
+    // create thumbnail helper
+    function makeThumbnail(dataUrl, max){ return new Promise((resolve)=>{ const img=new Image(); img.onload=()=>{ const canvas=document.createElement('canvas'); let w=img.width,h=img.height; if(w>h){ if(w>max){ h=(h*max)/w; w=max; } } else { if(h>max){ w=(w*max)/h; h=max; } } canvas.width=w; canvas.height=h; const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h); resolve(canvas.toDataURL('image/jpeg',0.6)); }; img.src=dataUrl; }); }
+
+    // delete / cancel
+    document.getElementById('saveBtn').addEventListener('click', saveSticker);
+    document.getElementById('deleteBtn').addEventListener('click', ()=>{ resetPhotoPage(); showPage(1); pushNotification('Annulé','Capture annulée'); });
+
+    // small helpers
+    function pushNotification(title, body){ notifications.unshift({id:Date.now(),title,body,ts:Date.now()}); localStorage.setItem('fs_notifications',JSON.stringify(notifications)); renderNotifications(); }
+
+    // profile modal wiring
+    document.getElementById('btnProfile').addEventListener('click', ()=>{ document.getElementById('profileModal').style.display='flex'; loadProfileToModal(); });
+    document.getElementById('closeProfile').addEventListener('click', ()=>{ document.getElementById('profileModal').style.display='none'; });
+    document.getElementById('saveProfile').addEventListener('click', ()=>{ const p={username:document.getElementById('pUsername').value,gender:document.getElementById('pGender').value,nationality:document.getElementById('pNationality').value,region:document.getElementById('pRegion').value,club:document.getElementById('pClubModal').value,bio:document.getElementById('pBio').value}; localStorage.setItem('fs_profile',JSON.stringify(p)); localStorage.setItem('profileSetupDone','1'); document.getElementById('profileModal').style.display='none'; });
+    function loadProfileToModal(){ const p=JSON.parse(localStorage.getItem('fs_profile')||'{}'); document.getElementById('pUsername').value=p.username||''; document.getElementById('pNationality').value=p.nationality||''; document.getElementById('pRegion').value=p.region||''; document.getElementById('pClubModal').value=p.club||''; document.getElementById('pBio').value=p.bio||''; }
+
+    // initial load dynamic
+    loadDynamic(); renderNotifications();
+
+    // small demo: if no notifications, greet
+    if(notifications.length===0) pushNotification('Bienvenue','Glisse sur le bouton photo pour choisir Stick/Surstick puis prends une photo.');
+
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>FC Stickers — Caméra BeReal-like</title>
@@ -80,163 +430,164 @@
 
 <!-- Confirmation modal -->
 <div id="confirmShell" class="confirm-shell" aria-hidden="true">
-  <div class="confirm-card">
-    <div style="display:flex;justify-content:space-between;align-items:center"><strong id="confirmType">Type</strong><div id="confirmPts" class="muted">Points</div></div>
-    <img id="confirmImage" class="confirm-img" />
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button id="confirmCancel" class="btn-ghost">Annuler</button><button id="confirmSave" class="btn">Enregistrer</button></div>
+    <div class="confirm-card">
+      <div style="display:flex;justify-content:space-between;align-items:center"><strong id="confirmType">Type</strong><div id="confirmPts" class="muted">Points</div></div>
+      <img id="confirmImage" class="confirm-img" />
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button id="confirmCancel" class="btn-ghost">Annuler</button><button id="confirmSave" class="btn">Enregistrer</button></div>
+    </div>
   </div>
-</div>
-
-<script>
-  // Robust camera flow for Android Samsung Internet
-  // Requirements from Matthieu: open rear camera only, full-screen BeReal-like UI, don't open front+rear simultaneously.
-
-  const cameraShell = document.getElementById('cameraShell');
-  const camVideo = document.getElementById('camVideo');
-  const captureBtn = document.getElementById('captureBtn');
-  const closeCam = document.getElementById('closeCam');
-  const camMessage = document.getElementById('camMessage');
-  const thumbPreview = document.getElementById('thumbPreview');
-  const thumbImg = document.getElementById('thumbImg');
-  const camTime = document.getElementById('camTime');
-
-  const confirmShell = document.getElementById('confirmShell');
-  const confirmImage = document.getElementById('confirmImage');
-  const confirmType = document.getElementById('confirmType');
-  const confirmPts = document.getElementById('confirmPts');
-  const confirmSave = document.getElementById('confirmSave');
-  const confirmCancel = document.getElementById('confirmCancel');
-
-  let stream = null;
-  let usingDeviceId = null; // we will prefer rear device id if available
-  let pendingType = 'sticker'; // 'sticker' or 'surstick'
-  const GAME = { points: { sticker:1, surstick:3 }, swipeThreshold: 60 };
-
-  // Update clock
-  function updateClock(){ const d=new Date(); camTime.textContent = d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
-  setInterval(updateClock,60000); updateClock();
-
-  // Utility: show temporary message
-  function showCamMessage(txt, ms=2000){ camMessage.textContent=txt; camMessage.classList.remove('hidden'); setTimeout(()=>camMessage.classList.add('hidden'),ms); }
-
-  // Helper to stop stream cleanly
-  function stopStream(){ try{ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; usingDeviceId=null; camVideo.srcObject=null; } }catch(e){ console.warn('stopStream',e); } }
-
-  // Choose rear camera deviceId if possible
-  async function getRearDeviceId(){
-    try{
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      // Prefer device with 'back' or 'rear' in label
-      const videoInputs = devices.filter(d => d.kind === 'videoinput');
-      if(videoInputs.length===0) return null;
-      // Try to find labels indicating back camera (labels may be empty until permission granted)
-      const rear = videoInputs.find(d => /back|rear|arrière|postérieur/i.test(d.label));
-      if(rear) return rear.deviceId;
-      // If no label match, try to pick the last device (often rear is last)
-      return videoInputs[videoInputs.length-1].deviceId;
-    }catch(e){ console.warn('getRearDeviceId error', e); return null; }
-  }
-
-  // Start camera with preference for rear device
-  async function startCameraRearOnly(){
-    try{
-      // First attempt: enumerate to find rear device id
-      let deviceId = await getRearDeviceId();
-      let constraints;
-      if(deviceId){
-        constraints = { video: { deviceId: { exact: deviceId } }, audio: false };
-      } else {
-        // fallback to facingMode ideal
-        constraints = { video: { facingMode: { ideal: 'environment' } }, audio: false };
-      }
-
-      // Important: call getUserMedia only after UI transition to avoid Android killing the stream
-      const s = await navigator.mediaDevices.getUserMedia(constraints);
-      stream = s; camVideo.srcObject = s; usingDeviceId = deviceId || 'facing:environment';
-      // ensure playback. muted is necessary for autoplay on some browsers
-      try{ await camVideo.play(); }catch(playErr){ console.warn('video play failed', playErr); }
-      camVideo.style.display='block';
-      camMessage.classList.add('hidden');
-      return true;
-    }catch(err){
-      console.error('startCameraRearOnly error', err);
-      // If permission denied or error, give clear guidance for Samsung Internet
-      if(err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')){
-        showCamMessage('Permission caméra refusée. Active la permission dans les paramètres du navigateur.', 4000);
-      } else {
-        showCamMessage('Impossible d\'accéder à la caméra. Essaie la galerie.', 3000);
-      }
-      return false;
+  
+  <script>
+    // Robust camera flow for Android Samsung Internet
+    // Requirements from Matthieu: open rear camera only, full-screen BeReal-like UI, don't open front+rear simultaneously.
+  
+    const cameraShell = document.getElementById('cameraShell');
+    const camVideo = document.getElementById('camVideo');
+    const captureBtn = document.getElementById('captureBtn');
+    const closeCam = document.getElementById('closeCam');
+    const camMessage = document.getElementById('camMessage');
+    const thumbPreview = document.getElementById('thumbPreview');
+    const thumbImg = document.getElementById('thumbImg');
+    const camTime = document.getElementById('camTime');
+  
+    const confirmShell = document.getElementById('confirmShell');
+    const confirmImage = document.getElementById('confirmImage');
+    const confirmType = document.getElementById('confirmType');
+    const confirmPts = document.getElementById('confirmPts');
+    const confirmSave = document.getElementById('confirmSave');
+    const confirmCancel = document.getElementById('confirmCancel');
+  
+    let stream = null;
+    let usingDeviceId = null; // we will prefer rear device id if available
+    let pendingType = 'sticker'; // 'sticker' or 'surstick'
+    const GAME = { points: { sticker:1, surstick:3 }, swipeThreshold: 60 };
+  
+    // Update clock
+    function updateClock(){ const d=new Date(); camTime.textContent = d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
+    setInterval(updateClock,60000); updateClock();
+  
+    // Utility: show temporary message
+    function showCamMessage(txt, ms=2000){ camMessage.textContent=txt; camMessage.classList.remove('hidden'); setTimeout(()=>camMessage.classList.add('hidden'),ms); }
+  
+    // Helper to stop stream cleanly
+    function stopStream(){ try{ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; usingDeviceId=null; camVideo.srcObject=null; } }catch(e){ console.warn('stopStream',e); } }
+  
+    // Choose rear camera deviceId if possible
+    async function getRearDeviceId(){
+      try{
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        // Prefer device with 'back' or 'rear' in label
+        const videoInputs = devices.filter(d => d.kind === 'videoinput');
+        if(videoInputs.length===0) return null;
+        // Try to find labels indicating back camera (labels may be empty until permission granted)
+        const rear = videoInputs.find(d => /back|rear|arrière|postérieur/i.test(d.label));
+        if(rear) return rear.deviceId;
+        // If no label match, try to pick the last device (often rear is last)
+        return videoInputs[videoInputs.length-1].deviceId;
+      }catch(e){ console.warn('getRearDeviceId error', e); return null; }
     }
-  }
-
-  // Open camera mode: show UI, wait small transition, then start camera
-  async function openCameraMode(){
-    // ensure single camera instance
-    stopStream();
-
-    cameraShell.classList.remove('hidden'); cameraShell.setAttribute('aria-hidden','false');
-    // small CSS transition emulation: wait for paint
-    await new Promise(r => requestAnimationFrame(()=>r()));
-    // wait a bit for transition/paint to avoid Android auto-stop
-    await new Promise(r => setTimeout(r, 360));
-
-    const ok = await startCameraRearOnly();
-    if(!ok){
-      // fallback: open file input (gallery)
-      // create a hidden input and trigger
-      const input = document.createElement('input'); input.type='file'; input.accept='image/*'; input.style.display='none';
-      input.addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const reader=new FileReader(); reader.onload=(ev)=>{ onImageCaptured(ev.target.result); }; reader.readAsDataURL(f); });
-      document.body.appendChild(input); input.click();
-      setTimeout(()=>input.remove(),2000);
+  
+    // Start camera with preference for rear device
+    async function startCameraRearOnly(){
+      try{
+        // First attempt: enumerate to find rear device id
+        let deviceId = await getRearDeviceId();
+        let constraints;
+        if(deviceId){
+          constraints = { video: { deviceId: { exact: deviceId } }, audio: false };
+        } else {
+          // fallback to facingMode ideal
+          constraints = { video: { facingMode: { ideal: 'environment' } }, audio: false };
+        }
+  
+        // Important: call getUserMedia only after UI transition to avoid Android killing the stream
+        const s = await navigator.mediaDevices.getUserMedia(constraints);
+        stream = s; camVideo.srcObject = s; usingDeviceId = deviceId || 'facing:environment';
+        // ensure playback. muted is necessary for autoplay on some browsers
+        try{ await camVideo.play(); }catch(playErr){ console.warn('video play failed', playErr); }
+        camVideo.style.display='block';
+        camMessage.classList.add('hidden');
+        return true;
+      }catch(err){
+        console.error('startCameraRearOnly error', err);
+        // If permission denied or error, give clear guidance for Samsung Internet
+        if(err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')){
+          showCamMessage('Permission caméra refusée. Active la permission dans les paramètres du navigateur.', 4000);
+        } else {
+          showCamMessage('Impossible d\'accéder à la caméra. Essaie la galerie.', 3000);
+        }
+        return false;
+      }
     }
-  }
-
-  // Close camera mode: do not kill stream unless forced
-  function closeCameraMode(){ stopStream(); cameraShell.classList.add('hidden'); cameraShell.setAttribute('aria-hidden','true'); }
-
-  // Capture logic: draw frame -> show thumbnail + confirmation
-  captureBtn.addEventListener('click', ()=>{
-    if(!stream){ showCamMessage('Caméra non prête'); return; }
-    try{
-      const video = camVideo; const canvas = document.createElement('canvas'); canvas.width = video.videoWidth || 1280; canvas.height = video.videoHeight || 720; const ctx = canvas.getContext('2d'); ctx.drawImage(video, 0, 0, canvas.width, canvas.height); const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-      // show small thumb
-      thumbImg.src = dataUrl; thumbPreview.style.display='block';
-      // stop camera after a short delay to ensure frame captured
-      setTimeout(()=>{ stopStream(); }, 220);
-      // open confirmation modal
-      openConfirmation(dataUrl);
-    }catch(err){ console.error('capture error', err); showCamMessage('Erreur capture',2000); }
-  });
-
-  function openConfirmation(dataUrl){ confirmImage.src = dataUrl; confirmType.textContent = pendingType === 'surstick' ? 'SURSTICK' : 'STICKER'; confirmPts.textContent = pendingType === 'surstick' ? `+${GAME.points.surstick} pts` : `+${GAME.points.sticker} pts`; confirmShell.style.display='flex'; confirmShell.setAttribute('aria-hidden','false'); }
-
-  confirmCancel.addEventListener('click', ()=>{ confirmShell.style.display='none'; confirmShell.setAttribute('aria-hidden','true'); closeCameraMode(); });
-
-  confirmSave.addEventListener('click', ()=>{
-    // Save metadata + thumbnail to localStorage (lightweight)
-    const meta = { id: Date.now(), type: pendingType, timestamp: new Date().toISOString() };
-    const arr = JSON.parse(localStorage.getItem('stickers_meta')||'[]'); arr.unshift(meta); localStorage.setItem('stickers_meta', JSON.stringify(arr));
-    confirmShell.style.display='none'; confirmShell.setAttribute('aria-hidden','true'); closeCameraMode(); alert('Sticker enregistré (demo)');
-  });
-
-  closeCam.addEventListener('click', ()=>{ closeCameraMode(); });
-
-  // Swiping behavior on the fixed photo button (existing UI) should set pendingType before opening camera
-  // For that we expose a helper to set pendingType and call openCameraMode()
-  window.setPendingAndOpen = function(type){ pendingType = type === 'surstick' ? 'surstick' : 'sticker'; openCameraMode(); };
-
-  // Also handle keyboard for testing
-  document.addEventListener('keydown', (e)=>{ if(e.key==='c'){ setPendingAndOpen('sticker'); } if(e.key==='s'){ setPendingAndOpen('surstick'); } if(e.key==='Escape'){ closeCameraMode(); } });
-
-  // Visibility handling: stop camera if page hidden
-  document.addEventListener('visibilitychange', ()=>{ if(document.hidden){ stopStream(); } });
-
-  // Expose function for quick testing via button in page
-  window.openCameraMode = openCameraMode;
-
-  // If you want the original photo-button swipe integration: call setPendingAndOpen before opening camera
-  // e.g. setPendingAndOpen('surstick')
-</script>
-</body>
-</html>
+  
+    // Open camera mode: show UI, wait small transition, then start camera
+    async function openCameraMode(){
+      // ensure single camera instance
+      stopStream();
+  
+      cameraShell.classList.remove('hidden'); cameraShell.setAttribute('aria-hidden','false');
+      // small CSS transition emulation: wait for paint
+      await new Promise(r => requestAnimationFrame(()=>r()));
+      // wait a bit for transition/paint to avoid Android auto-stop
+      await new Promise(r => setTimeout(r, 360));
+  
+      const ok = await startCameraRearOnly();
+      if(!ok){
+        // fallback: open file input (gallery)
+        // create a hidden input and trigger
+        const input = document.createElement('input'); input.type='file'; input.accept='image/*'; input.style.display='none';
+        input.addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const reader=new FileReader(); reader.onload=(ev)=>{ onImageCaptured(ev.target.result); }; reader.readAsDataURL(f); });
+        document.body.appendChild(input); input.click();
+        setTimeout(()=>input.remove(),2000);
+      }
+    }
+  
+    // Close camera mode: do not kill stream unless forced
+    function closeCameraMode(){ stopStream(); cameraShell.classList.add('hidden'); cameraShell.setAttribute('aria-hidden','true'); }
+  
+    // Capture logic: draw frame -> show thumbnail + confirmation
+    captureBtn.addEventListener('click', ()=>{
+      if(!stream){ showCamMessage('Caméra non prête'); return; }
+      try{
+        const video = camVideo; const canvas = document.createElement('canvas'); canvas.width = video.videoWidth || 1280; canvas.height = video.videoHeight || 720; const ctx = canvas.getContext('2d'); ctx.drawImage(video, 0, 0, canvas.width, canvas.height); const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        // show small thumb
+        thumbImg.src = dataUrl; thumbPreview.style.display='block';
+        // stop camera after a short delay to ensure frame captured
+        setTimeout(()=>{ stopStream(); }, 220);
+        // open confirmation modal
+        openConfirmation(dataUrl);
+      }catch(err){ console.error('capture error', err); showCamMessage('Erreur capture',2000); }
+    });
+  
+    function openConfirmation(dataUrl){ confirmImage.src = dataUrl; confirmType.textContent = pendingType === 'surstick' ? 'SURSTICK' : 'STICKER'; confirmPts.textContent = pendingType === 'surstick' ? `+${GAME.points.surstick} pts` : `+${GAME.points.sticker} pts`; confirmShell.style.display='flex'; confirmShell.setAttribute('aria-hidden','false'); }
+  
+    confirmCancel.addEventListener('click', ()=>{ confirmShell.style.display='none'; confirmShell.setAttribute('aria-hidden','true'); closeCameraMode(); });
+  
+    confirmSave.addEventListener('click', ()=>{
+      // Save metadata + thumbnail to localStorage (lightweight)
+      const meta = { id: Date.now(), type: pendingType, timestamp: new Date().toISOString() };
+      const arr = JSON.parse(localStorage.getItem('stickers_meta')||'[]'); arr.unshift(meta); localStorage.setItem('stickers_meta', JSON.stringify(arr));
+      confirmShell.style.display='none'; confirmShell.setAttribute('aria-hidden','true'); closeCameraMode(); alert('Sticker enregistré (demo)');
+    });
+  
+    closeCam.addEventListener('click', ()=>{ closeCameraMode(); });
+  
+    // Swiping behavior on the fixed photo button (existing UI) should set pendingType before opening camera
+    // For that we expose a helper to set pendingType and call openCameraMode()
+    window.setPendingAndOpen = function(type){ pendingType = type === 'surstick' ? 'surstick' : 'sticker'; openCameraMode(); };
+  
+    // Also handle keyboard for testing
+    document.addEventListener('keydown', (e)=>{ if(e.key==='c'){ setPendingAndOpen('sticker'); } if(e.key==='s'){ setPendingAndOpen('surstick'); } if(e.key==='Escape'){ closeCameraMode(); } });
+  
+    // Visibility handling: stop camera if page hidden
+    document.addEventListener('visibilitychange', ()=>{ if(document.hidden){ stopStream(); } });
+  
+    // Expose function for quick testing via button in page
+    window.openCameraMode = openCameraMode;
+  
+    // If you want the original photo-button swipe integration: call setPendingAndOpen before opening camera
+    // e.g. setPendingAndOpen('surstick')
+  </script>
+  </body>
+  </html>
+  
