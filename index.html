@@ -7,14 +7,37 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS, Chart.js et Lucide Icons pour l'application interactive -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- Configuration Tailwind (restreinte à l'application interactive) -->
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    dark: '#0f172a',
+                    primary: '#3b82f6',
+                    accent: '#8b5cf6'
+                }
+            }
+        }
+    }
+</script>
+
 <style>
+/* ==========================================================================
+   STYLES DE LA PAGE PRINCIPALE (ORIGINAUX)
+   ========================================================================== */
 :root{
   --navy:#0d1730; --navy2:#141f3d; --ink:#0d1220; --accent:#4f6bf0; --accent2:#8a5cf6;
   --bg:#fbfbfd; --paper:#ffffff; --muted:#5c6579; --border:#e7e9f2;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
-:root:not([data-theme="light"]){ }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth; scroll-padding-top:78px}
 html,body{margin:0}
@@ -23,18 +46,39 @@ h1,h2,h3{font-family:'Sora',Arial,sans-serif;letter-spacing:-0.01em}
 a{color:inherit}
 img{max-width:100%}
 
-/* Nav */
-header{position:sticky;top:0;top:env(safe-area-inset-top,0px);z-index:50;
-  background:rgba(13,23,48,0.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+/* Nav — bureau : ligne horizontale / mobile : menu déroulant */
+header.main-nav{position:sticky;top:0;top:env(safe-area-inset-top,0px);z-index:50;
+  background:rgba(13,23,48,0.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid rgba(255,255,255,.08)}
 .nav-inner{max-width:1100px;margin:0 auto;padding:14px 24px;padding-top:calc(14px + env(safe-area-inset-top,0px));
-  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  display:flex;align-items:center;justify-content:space-between;gap:16px}
 .brand{color:#fff;font-weight:700;font-size:1rem;font-family:'Sora',sans-serif;display:flex;align-items:center;gap:8px}
 .brand .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2))}
 nav.links{display:flex;gap:2px;flex-wrap:wrap}
 nav.links a{color:rgba(255,255,255,.72);text-decoration:none;font-size:.85rem;font-weight:500;padding:9px 14px;border-radius:8px;transition:.2s}
 nav.links a:hover{color:#fff;background:rgba(255,255,255,.08)}
 nav.links a.active{color:#fff;background:rgba(255,255,255,.14)}
+
+.nav-toggle{display:none;background:none;border:1px solid rgba(255,255,255,.22);border-radius:8px;
+  width:40px;height:40px;flex-shrink:0;align-items:center;justify-content:center;cursor:pointer}
+.nav-toggle span,.nav-toggle span::before,.nav-toggle span::after{content:'';display:block;width:18px;height:2px;
+  background:#fff;position:relative;transition:transform .25s ease,opacity .25s ease}
+.nav-toggle span::before{position:absolute;top:-6px}
+.nav-toggle span::after{position:absolute;top:6px}
+.nav-toggle.open span{background:transparent}
+.nav-toggle.open span::before{transform:translateY(6px) rotate(45deg)}
+.nav-toggle.open span::after{transform:translateY(-6px) rotate(-45deg)}
+
+@media (max-width:860px){
+  .nav-toggle{display:flex}
+  nav.links{position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:0;
+    background:#0d1730f0;backdrop-filter:blur(14px);
+    max-height:0;overflow:hidden;opacity:0;
+    transition:max-height .35s cubic-bezier(.16,1,.3,1),opacity .3s ease}
+  nav.links.open{max-height:420px;opacity:1;border-bottom:1px solid rgba(255,255,255,.08)}
+  nav.links a{padding:14px 24px;border-radius:0;border-bottom:1px solid rgba(255,255,255,.06)}
+  .nav-inner{position:relative}
+}
 
 /* Hero */
 .hero{position:relative;padding:120px 24px 100px;text-align:center;overflow:hidden;
@@ -47,10 +91,8 @@ nav.links a.active{color:#fff;background:rgba(255,255,255,.14)}
   0%{transform:translate(0,0) scale(1)}
   100%{transform:translate(2%,-3%) scale(1.06)}
 }
-@media (prefers-reduced-motion:reduce){.hero::before{animation:none}}
 .hero-inner{position:relative;max-width:760px;margin:0 auto;animation:heroIn .8s cubic-bezier(.16,1,.3,1) both}
 @keyframes heroIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-@media (prefers-reduced-motion:reduce){.hero-inner{animation:none}}
 .eyebrow{display:inline-block;color:#c8d1ff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
   padding:6px 16px;border-radius:999px;font-size:.78rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:24px}
 .hero h1{color:#fff;font-size:clamp(2.1rem,4.4vw,3.4rem);font-weight:800;line-height:1.12;margin:0 0 20px}
@@ -58,7 +100,7 @@ nav.links a.active{color:#fff;background:rgba(255,255,255,.14)}
 .hero p{color:#b7c0da;font-size:1.1rem;max-width:560px;margin:0 auto 34px}
 .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:600;font-size:.95rem;
-  padding:15px 30px;border-radius:12px;transition:.2s}
+  padding:15px 30px;border-radius:12px;transition:.2s; border: none; cursor: pointer;}
 .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 12px 30px -8px rgba(79,107,240,.55)}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 34px -6px rgba(79,107,240,.65)}
 .btn span.arrow{display:inline-block;transition:transform .25s ease}
@@ -86,24 +128,8 @@ h2.title{font-size:clamp(1.5rem,2.6vw,2.1rem);font-weight:700;color:var(--ink);m
 /* Questionnaire */
 .form-shell{background:linear-gradient(180deg,#fff,var(--paper));border:1px solid var(--border);border-radius:20px;
   padding:8px;box-shadow:0 20px 50px -20px rgba(20,25,50,.2)}
-.iframe-wrap{border-radius:14px;overflow:hidden;background:#fff}
-iframe{width:100%;height:1200px;border:0;display:block}
 .placeholder{border:1px dashed #c3cbe6;background:#f3f5fd;color:var(--muted);
   font-size:.85rem;padding:14px 16px;border-radius:10px;margin-top:14px}
-
-/* Chart */
-.chart{margin-top:10px}
-.bar-row{display:flex;align-items:center;gap:14px;margin:12px 0;font-size:.86rem}
-.bar-label{width:170px;flex-shrink:0;color:var(--muted)}
-.bar-track{flex:1;background:#eef0f8;border-radius:999px;overflow:hidden;height:14px;display:flex;gap:2px}
-.bar-fill{height:100%;border-radius:999px}
-.bar-fill.insee{background:linear-gradient(90deg,#4f6bf0,#6d8bff)}
-.bar-fill.sample{background:linear-gradient(90deg,#e08a3a,#f0ab5c)}
-.legend{display:flex;gap:22px;font-size:.82rem;margin-top:14px;color:var(--muted)}
-.legend span::before{content:'';display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:middle}
-.legend .l1::before{background:linear-gradient(90deg,#4f6bf0,#6d8bff)} .legend .l2::before{background:linear-gradient(90deg,#e08a3a,#f0ab5c)}
-.verbatim{position:relative;background:var(--paper);border:1px solid var(--border);border-left:4px solid var(--accent);
-  padding:18px 22px;border-radius:10px;margin:16px 0;font-style:italic;color:#3a4159}
 
 /* Team */
 .team{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px}
@@ -119,35 +145,11 @@ footer{text-align:center;font-size:.8rem;color:var(--muted);padding:36px 24px;ba
 footer b{color:#fff}
 
 @media(max-width:640px){
-  .bar-label{width:110px;font-size:.78rem}
-  section.block{padding:64px 20px}
+  section.block{padding:56px 20px}
+  .hero{padding:90px 20px 70px}
+  .cta-row{flex-direction:column;align-items:stretch}
+  .cta-row .btn{justify-content:center}
 }
-
-/* Recherche */
-.sources{max-height:0;overflow:hidden;margin-top:0;background:var(--paper);border:1px solid var(--border);border-radius:12px;
-  padding:0 22px;opacity:0;transition:max-height .45s cubic-bezier(.16,1,.3,1),opacity .35s ease,margin-top .35s ease,padding .35s ease}
-.sources.show{max-height:600px;opacity:1;margin-top:18px;padding:18px 22px}
-.sources ol{margin:0;padding-left:20px;color:var(--muted);font-size:.86rem}
-.sources li{margin:6px 0}
-.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--border);box-shadow:none}
-.btn-outline:hover{background:var(--paper);transform:none}
-
-/* Page analyse complète (plein écran) */
-.modal-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto;
-  padding-bottom:env(safe-area-inset-bottom,0px);
-  opacity:0;visibility:hidden;transform:translateY(16px);
-  transition:opacity .35s ease,transform .4s cubic-bezier(.16,1,.3,1),visibility 0s linear .35s}
-.modal-overlay.show{opacity:1;visibility:visible;transform:translateY(0);transition:opacity .35s ease,transform .4s cubic-bezier(.16,1,.3,1),visibility 0s}
-@media (prefers-reduced-motion:reduce){.modal-overlay{transition:opacity .01s}}
-.modal-topbar{position:sticky;top:0;top:env(safe-area-inset-top,0px);z-index:2;background:var(--navy);color:#fff;
-  padding:16px 24px;padding-top:calc(16px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:10px}
-.modal-back{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:8px;
-  padding:9px 16px;font-size:.85rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-.modal-back:hover{background:rgba(255,255,255,.18)}
-.modal-panel{max-width:760px;margin:0 auto;padding:56px 24px 120px}
-.modal-panel h2.mtitle{margin-top:0}
-.modal-panel h3{font-family:'Sora',Arial,sans-serif;font-size:1.08rem;margin:32px 0 10px;color:var(--ink)}
-.modal-panel p{color:#374057;margin:0 0 4px}
 
 /* Animations au scroll */
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
@@ -157,14 +159,54 @@ footer b{color:#fff}
 .grid3 .card.reveal:nth-child(3){transition-delay:.25s}
 .team .member.reveal:nth-child(1){transition-delay:.05s}
 .team .member.reveal:nth-child(2){transition-delay:.15s}
-@media (prefers-reduced-motion:reduce){
-  .reveal{opacity:1;transform:none;transition:none}
+
+/* ==========================================================================
+   STYLES DU SPA DANS LA MODALE
+   ========================================================================== */
+
+/* Structure de la modale adaptée pour devenir le conteneur du SPA */
+.modal-overlay{
+    position:fixed; inset:0; background:#0f172a; z-index:200; overflow:hidden;
+    display:flex; flex-direction:column;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    opacity:0; visibility:hidden; transform:translateY(16px);
+    transition:opacity .35s ease,transform .4s cubic-bezier(.16,1,.3,1),visibility 0s linear .35s;
+}
+.modal-overlay.show{
+    opacity:1; visibility:visible; transform:translateY(0);
+    transition:opacity .35s ease,transform .4s cubic-bezier(.16,1,.3,1),visibility 0s;
+}
+
+/* Éléments internes du SPA */
+.glass-card {
+    background: rgba(30, 41, 59, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.tab-content { display: none; }
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.chart-container {
+    position: relative;
+    height: 220px;
+    width: 100%;
+}
+.progress-bar-fill {
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.6s ease;
 }
 </style>
 </head>
 <body>
 
-<header>
+<!-- EN-TÊTE PAGE PRINCIPALE -->
+<header class="main-nav">
   <div class="nav-inner">
     <div class="brand"><span class="dot"></span>Niveau de vie & Santé mentale</div>
     <nav class="links" id="nav">
@@ -175,9 +217,11 @@ footer b{color:#fff}
       <a href="#ecole" data-id="ecole">L'École</a>
       <a href="#equipe" data-id="equipe">Équipe</a>
     </nav>
+    <button class="nav-toggle" id="navToggle" type="button" aria-label="Ouvrir le menu" aria-expanded="false"><span></span></button>
   </div>
 </header>
 
+<!-- HERO PAGE PRINCIPALE -->
 <section class="hero" id="accueil">
   <div class="hero-inner">
     <span class="eyebrow">Projet d'études · École de Psychologues Praticiens</span>
@@ -191,6 +235,7 @@ footer b{color:#fff}
   </div>
 </section>
 
+<!-- SECTIONS PAGE PRINCIPALE -->
 <section class="block tight" id="le-projet">
   <div class="kicker">Le projet</div>
   <h2 class="title">Pourquoi cette enquête ?</h2>
@@ -205,21 +250,24 @@ footer b{color:#fff}
 <section class="block alt" id="recherche">
   <div class="kicker">Revue de littérature</div>
   <h2 class="title">Ce que dit la recherche</h2>
-  <p class="placeholder">[Synthèse à rédiger] En résumé, les études existantes (INSEE, DREES) suggèrent qu'un niveau de vie plus faible est associé à une probabilité plus élevée de détresse psychologique et de renoncement aux soins — un lien que notre enquête cherche à observer à l'échelle lyonnaise.</p>
+  <p class="placeholder" style="border:none; background:transparent; padding:0; font-size:1.02rem; color:var(--muted); max-width:640px;">En résumé, les études existantes (INSEE, DREES) suggèrent qu'un niveau de vie plus faible est associé à une probabilité plus élevée de détresse psychologique et de renoncement aux soins — un lien que notre enquête cherche à observer à l'échelle lyonnaise.</p>
   <div class="cta-row" style="justify-content:flex-start;margin-top:20px">
-    <button class="btn btn-primary" type="button" onclick="document.getElementById('analyseModal').classList.add('show');document.body.style.overflow='hidden'">Lire l'analyse complète <span class="arrow">→</span></button>
+    <!-- BOUTON QUI DÉCLENCHE LA MODALE SPA -->
+    <button class="btn btn-primary" type="button" onclick="document.getElementById('analyseModal').classList.add('show');document.body.style.overflow='hidden'">
+        Lire l'analyse complète <span class="arrow">→</span>
+    </button>
   </div>
 </section>
 
 <section class="block" id="demarche">
   <div class="kicker">Méthodologie</div>
   <h2 class="title">Notre Démarche & Cadrage Théorique</h2>
-  <p class="placeholder">[Texte à rédiger] Présenter ici le croisement entre les statistiques officielles nationales (INSEE, DREES) et les données de terrain recueillies (questionnaire en ligne + micro-trottoirs lyonnais). Expliquer le choix de cette double approche quantitative/qualitative et ses limites.</p>
+  <p class="placeholder" style="border:none; background:transparent; padding:0; font-size:1.02rem; color:var(--muted); max-width:640px;">Présentation du croisement entre les statistiques officielles nationales (INSEE, DREES) et les données de terrain recueillies (questionnaire en ligne + micro-trottoirs lyonnais). Choix d'une double approche quantitative/qualitative.</p>
   <h2 class="title" style="margin-top:44px">Variables observées</h2>
   <div class="grid3">
     <div class="card reveal"><b>PCS</b><p>Catégorie socio-professionnelle du répondant, utilisée pour situer son niveau de vie.</p></div>
     <div class="card reveal"><b>Reste à vivre</b><p>Part du revenu disponible après déduction des dépenses contraintes (logement, charges…).</p></div>
-    <div class="card reveal"><b>Renoncement aux soins</b><p>Fréquence à laquelle les répondants déclarent avoir renoncé à des soins (dont soins psychologiques) pour raisons financières.</p></div>
+    <div class="card reveal"><b>Renoncement aux soins</b><p>Fréquence à laquelle les répondants déclarent avoir renoncé à des soins (dont psychologiques) pour raisons financières.</p></div>
   </div>
 </section>
 
@@ -231,27 +279,27 @@ footer b{color:#fff}
     <p style="color:var(--muted);margin:0 0 24px;font-size:.95rem">Le formulaire s'ouvre dans un nouvel onglet pour garantir un affichage fiable sur tous les appareils.</p>
     <a class="btn btn-primary" href="https://docs.google.com/forms/d/e/1FAIpQLSdjDP3u9g4u63hN3C17Ghf9sK9vTXT8_NYspmC32T8Xf2sNkg/viewform" target="_blank" rel="noopener">Ouvrir le questionnaire <span class="arrow">→</span></a>
   </div>
-  </section>
+</section>
 
 <section class="block alt" id="ecole">
   <div class="kicker">Contexte académique</div>
   <h2 class="title">L'École de Psychologues Praticiens</h2>
   <p class="subtitle">Cette enquête est réalisée dans le cadre de notre première année au campus lyonnais de l'École de Psychologues Praticiens (EPP), un établissement d'enseignement supérieur privé à but non lucratif, fondé en 1951.</p>
   <div class="grid3">
-    <div class="card reveal"><b>Une formation reconnue</b><p>L'école forme au titre protégé de psychologue à travers un cursus de 5 ans, avec un tronc commun puis une spécialisation en clinique ou en psychologie du travail et des organisations.</p></div>
-    <div class="card reveal"><b>Le campus de Lyon</b><p>Situé à proximité du parc de la Tête d'Or et des quais du Rhône, facilement accessible et proche des logements étudiants.</p></div>
+    <div class="card reveal"><b>Une formation reconnue</b><p>L'école forme au titre protégé de psychologue à travers un cursus de 5 ans, avec un tronc commun puis une spécialisation.</p></div>
+    <div class="card reveal"><b>Le campus de Lyon</b><p>Situé à proximité du parc de la Tête d'Or et des quais du Rhône, facilement accessible.</p></div>
     <div class="card reveal"><b>Une communauté active</b><p>Plus de 6 500 diplômés et un réseau d'anciens élèves toujours mobilisé autour de la discipline.</p></div>
   </div>
-  <div class="placeholder">En savoir plus sur l'école : <a href="https://www.psycho-prat.fr/" target="_blank" rel="noopener">psycho-prat.fr</a></div>
+  <div class="placeholder" style="margin-top: 24px;">En savoir plus sur l'école : <a href="https://www.psycho-prat.fr/" target="_blank" rel="noopener" style="color:var(--accent); text-decoration: underline;">psycho-prat.fr</a></div>
 </section>
 
 <section class="block" id="equipe">
   <div class="kicker">L'équipe</div>
   <h2 class="title">Qui sommes-nous ?</h2>
-  <p class="subtitle">Nous sommes deux étudiants en première année à l'École de Psychologues Praticiens, curieux de mieux comprendre le lien entre conditions de vie et bien-être psychologique — un sujet qui nourrit notre projet de devenir psychologues. Cette enquête est notre premier pas dans une démarche de recherche de terrain.</p>
+  <p class="subtitle">Nous sommes deux étudiants en première année à l'École de Psychologues Praticiens, curieux de mieux comprendre le lien entre conditions de vie et bien-être psychologique. Cette enquête est notre premier pas dans une démarche de recherche de terrain.</p>
   <div class="team">
-    <div class="member reveal"><div class="avatar">GJ</div><h3>Gabriel Jouve</h3><div class="role">Étudiant en L1 — Campus de Lyon</div></div>
-    <div class="member reveal"><div class="avatar">MS</div><h3>Matthieu Suatton</h3><div class="role">Étudiant en L1 — Campus de Lyon</div></div>
+    <div class="member reveal"><div class="avatar">GJ</div><h3 style="font-size:1.05rem; margin:4px 0 2px;">Gabriel Jouve</h3><div class="role">Étudiant en L1 — Campus de Lyon</div></div>
+    <div class="member reveal"><div class="avatar">MS</div><h3 style="font-size:1.05rem; margin:4px 0 2px;">Matthieu Suatton</h3><div class="role">Étudiant en L1 — Campus de Lyon</div></div>
   </div>
 </section>
 
@@ -267,63 +315,280 @@ footer b{color:#fff}
   </div>
 </footer>
 
-<script>
-var links = document.querySelectorAll('nav.links a');
-var sections = ['accueil','recherche','demarche','questionnaire','ecole','equipe'].map(function(id){return document.getElementById(id)});
-function setActive(id){
-  links.forEach(function(a){a.classList.toggle('active', a.dataset.id===id)});
-}
-var io = new IntersectionObserver(function(entries){
-  entries.forEach(function(e){ if(e.isIntersecting){ setActive(e.target.id); } });
-}, {rootMargin:'-45% 0px -50% 0px'});
-sections.forEach(function(s){ if(s) io.observe(s); });
+<!-- ==========================================================================
+     MODALE PLEIN ÉCRAN : APPLICATION INTERACTIVE (SPA)
+     ========================================================================== -->
+<div class="modal-overlay text-slate-200 font-sans selection:bg-primary selection:text-white" id="analyseModal">
+    
+    <!-- En-tête SPA -->
+    <header class="glass-card pt-safe pb-4 px-4 sticky top-0 z-50 border-b border-slate-700/50 shadow-lg">
+        <div class="flex items-center justify-between mt-4">
+            <div>
+                <h1 style="margin:0; font-family:'Inter', sans-serif;" class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 leading-tight">
+                    Épidémiologie Sociale
+                </h1>
+                <p class="text-xs text-slate-400 font-medium">Déterminants de la santé mentale</p>
+            </div>
+            <!-- Bouton fermer -->
+            <button class="bg-slate-800 p-2 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors" 
+                    onclick="document.getElementById('analyseModal').classList.remove('show');document.body.style.overflow=''">
+                <i data-lucide="x" class="w-5 h-5 text-slate-300"></i>
+            </button>
+        </div>
+    </header>
 
-var revealEls = document.querySelectorAll('.reveal');
-var revealIo = new IntersectionObserver(function(entries){
-  entries.forEach(function(e){
-    if(e.isIntersecting){ e.target.classList.add('in-view'); revealIo.unobserve(e.target); }
-  });
-}, {threshold:.15, rootMargin:'0px 0px -8% 0px'});
-revealEls.forEach(function(el){ revealIo.observe(el); });
-</script>
+    <!-- Contenu Principal SPA -->
+    <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 space-y-6 scroll-smooth" id="spaMain">
 
-<div class="modal-overlay" id="analyseModal">
-  <div class="modal-topbar">
-    <button class="modal-back" type="button" onclick="document.getElementById('analyseModal').classList.remove('show');document.body.style.overflow=''">← Retour au site</button>
-  </div>
-  <div class="modal-panel">
-    <div class="kicker">Revue de littérature — analyse complète</div>
-    <h2 class="title mtitle">Ce que dit la recherche</h2>
-    <div class="placeholder">Contenu indicatif à remplacer par votre rédaction une fois les lectures (INSEE, DREES, littérature académique) faites.</div>
+        <!-- ONGLET 1 : SYNTHÈSE & THÉORIE -->
+        <section id="tab-synthese" class="tab-content active space-y-5">
+            <div class="glass-card rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                <h2 style="margin:0; font-family:'Inter', sans-serif;" class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-5 h-5 text-blue-400"></i> Cadre Théorique
+                </h2>
+                <p class="text-sm text-slate-300 leading-relaxed text-justify mb-4">
+                    La confrontation des hypothèses épidémiologiques valide l'impact du niveau de vie sur la santé psychique.
+                </p>
+                <div class="space-y-3">
+                    <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 border-l-4 border-l-blue-500">
+                        <h3 style="margin:0; font-family:'Inter', sans-serif;" class="text-sm font-bold text-blue-400 mb-1">Causalité Sociale (Validée)</h3>
+                        <p class="text-xs text-slate-300">La précarité et l'insécurité génèrent un stress chronique pathogène (dépression, TAG).</p>
+                    </div>
+                    <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 border-l-4 border-l-purple-500">
+                        <h3 style="margin:0; font-family:'Inter', sans-serif;" class="text-sm font-bold text-purple-400 mb-1">Sélection Sociale (Biais)</h3>
+                        <p class="text-xs text-slate-300">Les troubles sévères (ex: schizophrénie) précipitent le déclassement socio-économique.</p>
+                    </div>
+                </div>
+            </div>
 
-    <h3>1. Un gradient social bien documenté</h3>
-    <p class="placeholder">[À rédiger] Présenter les grandes études (INSEE, DREES, baromètres santé) montrant qu'un niveau de vie plus faible est associé à une prévalence plus élevée de détresse psychologique.</p>
+            <div class="glass-card rounded-2xl p-5">
+                <h2 style="margin:0; font-family:'Inter', sans-serif;" class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <i data-lucide="activity" class="w-5 h-5 text-red-400"></i> Charge Allostatique
+                </h2>
+                <ul class="relative border-l border-slate-600 ml-3 space-y-4 list-none p-0 m-0 pl-3">
+                    <li class="pl-4">
+                        <div class="absolute w-3 h-3 bg-red-400 rounded-full -left-[6.5px] mt-1.5 shadow-[0_0_8px_rgba(248,113,113,0.8)]"></div>
+                        <h4 style="margin:0;" class="text-sm font-bold text-slate-200">1. Stress socio-économique</h4>
+                        <p class="text-xs text-slate-400 mt-1">Suractivation prolongée de l'axe corticotrope liée à l'insécurité financière.</p>
+                    </li>
+                    <li class="pl-4">
+                        <div class="absolute w-3 h-3 bg-orange-400 rounded-full -left-[6.5px] mt-1.5"></div>
+                        <h4 style="margin:0;" class="text-sm font-bold text-slate-200">2. Lésions physiologiques</h4>
+                        <p class="text-xs text-slate-400 mt-1">Neurotoxicité du cortisol entraînant une atrophie hippocampique (Inserm).</p>
+                    </li>
+                    <li class="pl-4">
+                        <div class="absolute w-3 h-3 bg-red-600 rounded-full -left-[6.5px] mt-1.5"></div>
+                        <h4 style="margin:0;" class="text-sm font-bold text-slate-200">3. Décompensation clinique</h4>
+                        <p class="text-xs text-slate-400 mt-1">Apparition de syndromes dépressifs majeurs et épuisement professionnel (Burnout).</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
 
-    <h3>2. Le rôle du reste à vivre et du renoncement aux soins</h3>
-    <p class="placeholder">[À rédiger] Développer comment la contrainte budgétaire (reste à vivre) influence l'accès aux soins, y compris psychologiques, et les mécanismes proposés dans la littérature (stress chronique, isolement, retard de prise en charge…).</p>
+        <!-- ONGLET 2 : DONNÉES & GRAPHIQUES -->
+        <section id="tab-donnees" class="tab-content space-y-5">
+            <div class="glass-card rounded-2xl p-4">
+                <h2 style="margin:0;" class="text-sm font-bold text-white mb-1">Dépression & Aisance Financière</h2>
+                <p class="text-[10px] text-slate-400 mb-2">Source : Enquête EpiCov (Prévalence %)</p>
+                <div class="chart-container"><canvas id="depressionChart"></canvas></div>
+            </div>
 
-    <h3>3. Limites et débats</h3>
-    <p class="placeholder">[À rédiger] Nuancer : causalité vs corrélation, biais de déclaration, hétérogénéité des indicateurs de santé mentale selon les études.</p>
+            <div class="glass-card rounded-2xl p-4">
+                <h2 style="margin:0;" class="text-sm font-bold text-white mb-1">Taux de Suicide / Décile de Revenu</h2>
+                <p class="text-[10px] text-slate-400 mb-2">Source : DREES N°1364 (Taux pour 100 000 hab.)</p>
+                <div class="chart-container"><canvas id="suicideChart"></canvas></div>
+            </div>
 
-    <h3>4. Ce que notre enquête cherche à vérifier localement</h3>
-    <p class="placeholder">[À rédiger] Relier ce cadrage théorique à la méthodologie du projet (questionnaire + micro-trottoirs lyonnais) et à l'hypothèse de travail.</p>
+            <div class="glass-card rounded-2xl p-4">
+                <h2 style="margin:0;" class="text-sm font-bold text-white mb-1">Tension au Travail (Job Strain)</h2>
+                <p class="text-[10px] text-slate-400 mb-2">Source : DARES SUMER (Modèle de Karasek)</p>
+                <div class="chart-container"><canvas id="jobStrainChart"></canvas></div>
+            </div>
 
-    <div style="margin-top:30px">
-      <button class="btn btn-outline" id="toggleSources" type="button" onclick="
-        var s=document.getElementById('sourcesList');
-        var open=s.classList.toggle('show');
-        this.textContent = open ? 'Masquer les sources' : 'Afficher les sources';
-      ">Afficher les sources</button>
-      <div class="sources" id="sourcesList">
-        <ol>
-          <li>[Placeholder] INSEE — statistiques sur les niveaux de vie et la pauvreté en France.</li>
-          <li>[Placeholder] DREES — baromètre santé mentale / renoncement aux soins.</li>
-          <li>[Placeholder] Référence académique à ajouter (revue, auteur, année).</li>
-        </ol>
-      </div>
-    </div>
-  </div>
+            <div class="glass-card rounded-2xl p-4">
+                <h2 style="margin:0;" class="text-sm font-bold text-white mb-1">Consommation Psychotropes / PCS</h2>
+                <p class="text-[10px] text-slate-400 mb-2">Source : GIS Epi-Phare</p>
+                <div class="chart-container"><canvas id="psychotropeChart"></canvas></div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-4">
+                <h2 style="margin:0;" class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                    <i data-lucide="database" class="w-4 h-4 text-blue-400"></i> Matrice des Risques Cliniques
+                </h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700">
+                        <span class="block text-[10px] text-slate-400 uppercase font-bold">Ouvriers / Q1</span>
+                        <span class="text-xl font-bold text-red-400">15.2%</span>
+                        <p class="text-[9px] text-slate-500 mt-1">Prévalence dépression. Risque suicidaire élevé.</p>
+                    </div>
+                    <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700">
+                        <span class="block text-[10px] text-slate-400 uppercase font-bold">Employés / Q2</span>
+                        <span class="text-xl font-bold text-orange-400">11.4%</span>
+                        <p class="text-[9px] text-slate-500 mt-1">Sur-prescription psychotropes. Burnout.</p>
+                    </div>
+                    <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700">
+                        <span class="block text-[10px] text-slate-400 uppercase font-bold">Prof. Interm. / Q3</span>
+                        <span class="text-xl font-bold text-yellow-400">8.7%</span>
+                        <p class="text-[9px] text-slate-500 mt-1">Troubles anxieux liés à la pression.</p>
+                    </div>
+                    <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700">
+                        <span class="block text-[10px] text-slate-400 uppercase font-bold">Cadres / Q4</span>
+                        <span class="text-xl font-bold text-green-400">6.1%</span>
+                        <p class="text-[9px] text-slate-500 mt-1">Soutien psy privé. Risque clinique plus faible.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ONGLET 3 : PARCOURS & SOINS -->
+        <section id="tab-soins" class="tab-content space-y-5">
+            <div class="glass-card rounded-2xl p-5">
+                <h2 style="margin:0; font-family:'Inter', sans-serif;" class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                    <i data-lucide="stethoscope" class="w-5 h-5 text-green-400"></i> Accès aux Soins
+                </h2>
+                <p class="text-sm text-slate-300 mb-4">Analyse des freins financiers et structurels au suivi psychologique.</p>
+                
+                <div class="bg-slate-800 rounded-xl p-4 border border-slate-700 shadow-inner">
+                    <h3 style="margin:0; font-family:'Inter', sans-serif;" class="text-sm font-bold text-white mb-3">Simulateur : Reste à charge / séance</h3>
+                    
+                    <label class="block text-xs text-slate-400 mb-1">Dispositif d'accompagnement :</label>
+                    <select id="dispositifSelect" class="w-full bg-slate-900 border border-slate-600 text-sm text-white rounded-lg p-2.5 mb-3 outline-none">
+                        <option value="liberal">Psychologue Libéral (Tarif libre ≈ 60€)</option>
+                        <option value="monsoutienpsy">Dispositif MonSoutienPsy (Conventionné 50€)</option>
+                        <option value="cmp">Centre Médico-Psychologique (Secteur public)</option>
+                    </select>
+
+                    <label class="block text-xs text-slate-400 mb-1">Couverture Complémentaire :</label>
+                    <select id="mutuelleSelect" class="w-full bg-slate-900 border border-slate-600 text-sm text-white rounded-lg p-2.5 mb-4 outline-none">
+                        <option value="oui">Mutuelle (Forfait prévention classique)</option>
+                        <option value="non">Aucune / C2S (Complémentaire Solidaire)</option>
+                    </select>
+
+                    <button onclick="calculerRAC()" style="border:none" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer">
+                        Calculer le coût patient
+                    </button>
+
+                    <div id="resultatRAC" class="mt-4 hidden">
+                        <div class="flex justify-between items-center border-t border-slate-600 pt-3">
+                            <span class="text-sm text-slate-300">Reste à charge direct :</span>
+                            <span id="montantRAC" class="text-2xl font-bold text-red-400">0 €</span>
+                        </div>
+                        <p id="delaiEstime" class="text-xs text-slate-400 mt-2 italic text-right m-0"></p>
+                    </div>
+                </div>
+
+                <div class="mt-4 bg-orange-900/20 border border-orange-800/50 p-3 rounded-xl">
+                    <h4 style="margin:0;" class="text-xs font-bold text-orange-400 flex items-center gap-1 mb-1">
+                        <i data-lucide="alert-triangle" class="w-4 h-4"></i> Limites MonSoutienPsy
+                    </h4>
+                    <p class="text-[11px] text-slate-300 text-justify m-0">
+                        Malgré le remboursement, l'avance de frais et le faible nombre de psychologues conventionnés (tarification jugée inadéquate) constituent une barrière majeure pour les déciles précaires.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ONGLET 4 : SIMULATEUR VULNÉRABILITÉ -->
+        <section id="tab-vulnerabilite" class="tab-content space-y-5">
+            <div class="glass-card rounded-2xl p-5">
+                <h2 style="margin:0; font-family:'Inter', sans-serif;" class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                    <i data-lucide="target" class="w-5 h-5 text-purple-400"></i> Diagnostic de Vulnérabilité
+                </h2>
+                <p class="text-[11px] text-slate-400 mb-4">
+                    Évaluation multifactorielle du risque psychosocial basée sur les indicateurs de la DREES et de l'IRDES.
+                </p>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Statut Socio-Professionnel</label>
+                        <select id="simPcs" class="w-full bg-slate-800 border border-slate-600 text-sm text-white rounded-lg p-2.5 outline-none">
+                            <option value="1">Cadres, Étudiants soutenus, Prof. libérales</option>
+                            <option value="2">Professions intermédiaires</option>
+                            <option value="3">Employés, CDD, Intérim</option>
+                            <option value="4">Ouvriers, Étudiants boursiers précaires, Chômage</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Reste à vivre mensuel (Niveau de vie)</label>
+                        <select id="simRevenu" class="w-full bg-slate-800 border border-slate-600 text-sm text-white rounded-lg p-2.5 outline-none">
+                            <option value="1">Confortable (> 2000€ net)</option>
+                            <option value="2">Moyen (1300€ - 2000€)</option>
+                            <option value="3">Modeste (900€ - 1300€)</option>
+                            <option value="4">Sous le seuil de pauvreté (< 900€)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Isolement et Soutien Social</label>
+                        <select id="simIsolement" class="w-full bg-slate-800 border border-slate-600 text-sm text-white rounded-lg p-2.5 outline-none">
+                            <option value="1">Fort (Famille, amis proches, club sportif)</option>
+                            <option value="2">Moyen (Relations superficielles)</option>
+                            <option value="3">Isolé (Absence de réseau de soutien)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Contexte Géographique (Démographie)</label>
+                        <select id="simZone" class="w-full bg-slate-800 border border-slate-600 text-sm text-white rounded-lg p-2.5 outline-none">
+                            <option value="1">Métropole très dotée (ex: Lyon Centre)</option>
+                            <option value="2">Périurbain / Bassin moyen</option>
+                            <option value="4">Zone sous-dense (Désert médical rural)</option>
+                        </select>
+                    </div>
+
+                    <button onclick="calculerVulnerabilite()" style="border:none" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-4 rounded-xl transition-colors cursor-pointer">
+                        Analyser le profil de risque
+                    </button>
+                </div>
+
+                <div class="mt-6 bg-slate-900 rounded-xl p-4 border border-slate-700">
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-xs font-bold text-slate-300">Indice de risque global :</span>
+                        <span id="scoreVulnText" class="text-lg font-bold text-slate-500">En attente</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
+                        <div id="jaugeVuln" class="progress-bar-fill h-3 rounded-full w-0 bg-slate-500"></div>
+                    </div>
+                    <p id="analyseVuln" class="text-[11px] text-slate-400 mt-3 text-justify leading-relaxed m-0"></p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Navigation inférieure SPA -->
+    <nav class="glass-card absolute bottom-0 w-full border-t border-slate-700/80 pb-safe pt-1 z-50">
+        <ul class="flex justify-around items-center px-1 py-2 m-0 list-none">
+            <li>
+                <button onclick="switchTab('synthese', this)" style="border:none; background:transparent" class="nav-btn active flex flex-col items-center p-2 text-primary transition-colors cursor-pointer">
+                    <i data-lucide="book-open" class="w-5 h-5 mb-1"></i>
+                    <span class="text-[9px] font-semibold tracking-wide">Théorie</span>
+                </button>
+            </li>
+            <li>
+                <button onclick="switchTab('donnees', this)" style="border:none; background:transparent" class="nav-btn flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5 mb-1"></i>
+                    <span class="text-[9px] font-semibold tracking-wide">Données</span>
+                </button>
+            </li>
+            <li>
+                <button onclick="switchTab('soins', this)" style="border:none; background:transparent" class="nav-btn flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer">
+                    <i data-lucide="stethoscope" class="w-5 h-5 mb-1"></i>
+                    <span class="text-[9px] font-semibold tracking-wide">Soins</span>
+                </button>
+            </li>
+            <li>
+                <button onclick="switchTab('vulnerabilite', this)" style="border:none; background:transparent" class="nav-btn flex flex-col items-center p-2 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer">
+                    <i data-lucide="sliders" class="w-5 h-5 mb-1"></i>
+                    <span class="text-[9px] font-semibold tracking-wide">Simulateur</span>
+                </button>
+            </li>
+        </ul>
+    </nav>
 </div>
 
-</body>
-</html>
+
+<!-- ==========================================================================
+     SCRIPTS MÊLÉS (PAGE PRINCIPALE + S
